@@ -108,8 +108,8 @@ public class MoveFinder {
     private static List<TreeNode> GetJumpMove(List<Point> pawnPosition, Board currentBoard, List<List<Point>> pointsToCheck, boolean[][] checked, Team myTeam, Team concurrentTeam) {
         List<TreeNode> nodes = new ArrayList<>();
 
-        int x = (int) pawnPosition.get(pawnPosition.size() - 1).getX();
-        int y = (int) pawnPosition.get(pawnPosition.size() - 1).getY();
+        int x = (int) pawnPosition.get(0).getX();
+        int y = (int) pawnPosition.get(0).getY();
         int size = currentBoard.getSize();
 
         //check jump right

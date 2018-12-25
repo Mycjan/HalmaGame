@@ -11,17 +11,19 @@ public class TreeNode {
     private Team concurrentTeam;
     private List<TreeNode> childrens;
 
-    public TreeNode(List<Point> moves, Board newBoard) {
+    public TreeNode(List<Point> moves, Board newBoard, Team myTeam, Team concurrentTeam) {
         this.moves = moves;
         this.newBoard = newBoard;
         this.childrens = null;
+        this.myTeam = myTeam;
+        this.concurrentTeam = concurrentTeam;
     }
 
     public TreeNode(Point newPoint, Point oldPoint, Board oldBoard, Team myOldTeam, Team concurrentOldTeam) {
         this.moves = Arrays.asList(oldPoint, newPoint);
-        this.concurrentTeam = concurrentOldTeam.clone();
-        this.myTeam = myOldTeam.clone();
-        movePawnInTeam(this.myTeam, oldPoint, newPoint);
+        this.concurrentTeam = myOldTeam.clone();
+        this.myTeam = concurrentOldTeam.clone();
+        movePawnInTeam(this.concurrentTeam, oldPoint, newPoint);
         this.newBoard = oldBoard.clone();
         movePawnOnBoard(this.newBoard, oldPoint, newPoint);
         this.childrens = null;
@@ -30,9 +32,9 @@ public class TreeNode {
     public TreeNode(Point newPoint, Point oldPoint, Board oldBoard, List<Point> moves, Team myOldTeam, Team concurrentOldTeam) {
         moves.add(newPoint);
         this.moves = moves;
-        this.concurrentTeam = concurrentOldTeam.clone();
-        this.myTeam = myOldTeam.clone();
-        movePawnInTeam(this.myTeam, oldPoint, newPoint);
+        this.concurrentTeam = myOldTeam.clone();
+        this.myTeam = concurrentOldTeam.clone();
+        movePawnInTeam(this.concurrentTeam, oldPoint, newPoint);
         this.newBoard = oldBoard.clone();
         movePawnOnBoard(this.newBoard, oldPoint, newPoint);
         this.childrens = null;
@@ -40,7 +42,7 @@ public class TreeNode {
 
     private static void movePawnInTeam(Team team, Point oldPoint, Point newPoint) {
         for (Pawn p : team.getPawns()) {
-            if (p.getX() == oldPoint.getX() && p.getY() == oldPoint.getY()) {
+            if (p.getX() == (int) oldPoint.getX() && p.getY() == (int) oldPoint.getY()) {
                 p.setX((int) newPoint.getX());
                 p.setY((int) newPoint.getY());
                 return;
@@ -59,7 +61,7 @@ public class TreeNode {
         return moves;
     }
 
-    public Board getnewBoard() {
+    public Board getBoard() {
         return newBoard;
     }
 
@@ -69,5 +71,13 @@ public class TreeNode {
 
     public void setChildres(List<TreeNode> childrens) {
         this.childrens = childrens;
+    }
+
+    public Team getMyTeam() {
+        return myTeam;
+    }
+
+    public Team getConcurrentTeam() {
+        return concurrentTeam;
     }
 }

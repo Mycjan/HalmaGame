@@ -12,7 +12,9 @@ public class Main {
         Team tSW = new Team(TeamDirection.SW, boardSize);
         board.placeTeam(tNE);
         board.placeTeam(tSW);
-        List<TreeNode> nodes = MoveFinder.GetAllMoves(tNE, tSW, board);
+        TreeNode root = new TreeNode(null, board, tNE, tSW);
+        GameTree tree = new GameTree(root);
+        tree.bildTree(10);
     }
 
 
