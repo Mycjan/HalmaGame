@@ -1,12 +1,15 @@
 package Models;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class Team {
     private List<Pawn> pawns;
     private TeamDirection direction;
-    private double teamDistance;
+
+    public Team() {
+    }
 
     public Team(TeamDirection direction, int boardSize) {
         this.direction = direction;
@@ -25,7 +28,7 @@ public class Team {
         countDistance(boardSize);
     }
 
-    public void countDistance(int boardSize) {
+    public double countDistance(int boardSize) {
         double distSum = 0;
         int x = Integer.MIN_VALUE;
         int y = Integer.MIN_VALUE;
@@ -45,7 +48,7 @@ public class Team {
             distSum += dist;
         }
 
-        this.teamDistance = distSum;
+        return distSum;
     }
 
     public TeamDirection getDirection() {
@@ -56,15 +59,18 @@ public class Team {
         return pawns;
     }
 
+    public Team clone() {
+        Team nTeam = new Team();
+        List<Pawn> nPawns = new ArrayList<>();
+        for (Pawn p : pawns)
+            nPawns.add(p.clone());
+        nTeam.pawns = nPawns;
+        nTeam.direction = direction;
+
+        return nTeam;
+    }
+
     public void setPawns(List<Pawn> pawns) {
         this.pawns = pawns;
-    }
-
-    public double getTeamDistance() {
-        return teamDistance;
-    }
-
-    public void setTeamDistance(double teamDistance) {
-        this.teamDistance = teamDistance;
     }
 }

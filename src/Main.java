@@ -12,7 +12,7 @@ public class Main {
         Team tSW = new Team(TeamDirection.SW, boardSize);
         board.placeTeam(tNE);
         board.placeTeam(tSW);
-        List<TreeNode> nodes = MoveFinder.GetAllMoves(tNE, board);
+        List<TreeNode> nodes = MoveFinder.GetAllMoves(tNE, tSW, board);
     }
 
 
