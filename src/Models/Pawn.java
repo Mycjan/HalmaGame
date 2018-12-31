@@ -27,4 +27,9 @@ public class Pawn {
     public void setY(int y) {
         this.y = y;
     }
+
+    public Pawn clone() {
+        return new Pawn(x, y);
+    }
+
 }
