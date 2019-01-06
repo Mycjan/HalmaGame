@@ -1,6 +1,8 @@
 import Models.*;
 
+import java.awt.*;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static void main(String[] args) {
@@ -12,9 +14,10 @@ public class Main {
         Team tSW = new Team(TeamDirection.SW, boardSize);
         board.placeTeam(tNE);
         board.placeTeam(tSW);
-        TreeNode root = new TreeNode(null, board, tNE, tSW);
+        TreeNode root = new TreeNode(null, board, tNE, tSW, 0);
         GameTree tree = new GameTree(root);
-        tree.bildTree(10);
+        tree.bildTree(7, TimeUnit.SECONDS);
+        List<Point> moves = tree.getBestMove();
     }
 
 

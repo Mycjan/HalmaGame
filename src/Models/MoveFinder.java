@@ -12,26 +12,28 @@ public class MoveFinder {
         private Board board;
         private Team myTeam;
         private Team concurrentTeam;
+        private int levelNum;
 
-        public PawnMove(Pawn pawn, List<TreeNode> nodes, Board board, Team myTeam, Team concurrentTeam) {
+        public PawnMove(Pawn pawn, List<TreeNode> nodes, Board board, Team myTeam, Team concurrentTeam, int levelNum) {
             this.pawn = pawn;
             this.nodes = nodes;
             this.board = board;
             this.myTeam = myTeam;
             this.concurrentTeam = concurrentTeam;
+            this.levelNum = levelNum;
         }
 
         @Override
         public void run() {
-            nodes.addAll(MoveFinder.GetPawnsAllMoves(pawn, board, myTeam, concurrentTeam));
+            nodes.addAll(MoveFinder.GetPawnsAllMoves(pawn, board, myTeam, concurrentTeam, levelNum));
         }
     }
 
-    public static List<TreeNode> GetAllMoves(Team myTeam, Team concurrentTeam, Board currentBoard) {
+    public static List<TreeNode> GetAllMovesOnLevel(Team myTeam, Team concurrentTeam, Board currentBoard, int levelNum) {
         List<TreeNode> nodes = Collections.synchronizedList(new ArrayList<>());
         List<Thread> threads = new ArrayList<>();
         for (Pawn p : myTeam.getPawns()) {
-            Thread t = new Thread(new PawnMove(p, nodes, currentBoard, myTeam, concurrentTeam));
+            Thread t = new Thread(new PawnMove(p, nodes, currentBoard, myTeam, concurrentTeam, levelNum));
             threads.add(t);
             t.run();
         }
@@ -47,12 +49,12 @@ public class MoveFinder {
         return nodes;
     }
 
-    private static List<TreeNode> GetPawnsAllMoves(Pawn pawn, Board currentBoard, Team myTeam, Team concurrentTeam) {
+    private static List<TreeNode> GetPawnsAllMoves(Pawn pawn, Board currentBoard, Team myTeam, Team concurrentTeam, int levelNum) {
 
         if (!currentBoard.getTiles()[pawn.getX()][pawn.getY()])
             throw new IllegalArgumentException("Incorrect pawn position");
 
-        List<TreeNode> nodes = new ArrayList<>(MoveFinder.GetOneFieldsMove(pawn, currentBoard, myTeam, concurrentTeam));
+        List<TreeNode> nodes = new ArrayList<>(MoveFinder.GetOneFieldsMove(pawn, currentBoard, myTeam, concurrentTeam, levelNum));
 
         ArrayList<Point> pointToCheck = new ArrayList<Point>() {
             {
@@ -68,13 +70,13 @@ public class MoveFinder {
         boolean[][] checked = currentBoard.tilesDeepCopy();
         while (!pointsToCheck.isEmpty()) {
             List<Point> pawnPosition = pointsToCheck.remove(0);
-            nodes.addAll(MoveFinder.GetJumpMove(pawnPosition, currentBoard, pointsToCheck, checked, myTeam, concurrentTeam));
+            nodes.addAll(MoveFinder.GetJumpMove(pawnPosition, currentBoard, pointsToCheck, checked, myTeam, concurrentTeam, levelNum));
         }
 
         return nodes;
     }
 
-    private static List<TreeNode> GetOneFieldsMove(Pawn pawn, Board currentBoard, Team myTeam, Team concurrentTeam) {
+    private static List<TreeNode> GetOneFieldsMove(Pawn pawn, Board currentBoard, Team myTeam, Team concurrentTeam, int levelNum) {
         List<TreeNode> nodes = new ArrayList<>();
 
         int x = pawn.getX();
@@ -83,29 +85,29 @@ public class MoveFinder {
 
         //check field right
         if (x + 1 < size && !currentBoard.getTiles()[x + 1][y]) {
-            TreeNode node = new TreeNode(new Point(x + 1, y), new Point(x, y), currentBoard, myTeam, concurrentTeam);
+            TreeNode node = new TreeNode(new Point(x + 1, y), new Point(x, y), currentBoard, myTeam, concurrentTeam, levelNum);
             nodes.add(node);
         }
         //check field up
         if (y + 1 < size && !currentBoard.getTiles()[x][y + 1]) {
-            TreeNode node = new TreeNode(new Point(x, y + 1), new Point(x, y), currentBoard, myTeam, concurrentTeam);
+            TreeNode node = new TreeNode(new Point(x, y + 1), new Point(x, y), currentBoard, myTeam, concurrentTeam, levelNum);
             nodes.add(node);
         }
         //check field left
         if (x - 1 >= 0 && !currentBoard.getTiles()[x - 1][y]) {
-            TreeNode node = new TreeNode(new Point(x - 1, y), new Point(x, y), currentBoard, myTeam, concurrentTeam);
+            TreeNode node = new TreeNode(new Point(x - 1, y), new Point(x, y), currentBoard, myTeam, concurrentTeam, levelNum);
             nodes.add(node);
         }
         //check field down
         if (y - 1 >= 0 && !currentBoard.getTiles()[x][y - 1]) {
-            TreeNode node = new TreeNode(new Point(x, y - 1), new Point(x, y), currentBoard, myTeam, concurrentTeam);
+            TreeNode node = new TreeNode(new Point(x, y - 1), new Point(x, y), currentBoard, myTeam, concurrentTeam, levelNum);
             nodes.add(node);
         }
 
         return nodes;
     }
 
-    private static List<TreeNode> GetJumpMove(List<Point> pawnPosition, Board currentBoard, List<List<Point>> pointsToCheck, boolean[][] checked, Team myTeam, Team concurrentTeam) {
+    private static List<TreeNode> GetJumpMove(List<Point> pawnPosition, Board currentBoard, List<List<Point>> pointsToCheck, boolean[][] checked, Team myTeam, Team concurrentTeam, int levelNum) {
         List<TreeNode> nodes = new ArrayList<>();
 
         int x = (int) pawnPosition.get(0).getX();
@@ -118,7 +120,7 @@ public class MoveFinder {
             List<Point> pointToCheck = new ArrayList<>(pawnPosition);
             pointToCheck.add(new Point(x + 2, y));
             pointsToCheck.add(pointToCheck);
-            TreeNode node = new TreeNode(new Point(x + 2, y), new Point(x, y), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam);
+            TreeNode node = new TreeNode(new Point(x + 2, y), new Point(x, y), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam, levelNum);
             nodes.add(node);
         }
 
@@ -128,7 +130,7 @@ public class MoveFinder {
             List<Point> pointToCheck = new ArrayList<>(pawnPosition);
             pointToCheck.add(new Point(x - 2, y));
             pointsToCheck.add(pointToCheck);
-            TreeNode node = new TreeNode(new Point(x - 2, y), new Point(x, y), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam);
+            TreeNode node = new TreeNode(new Point(x - 2, y), new Point(x, y), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam, levelNum);
             nodes.add(node);
         }
 
@@ -138,7 +140,7 @@ public class MoveFinder {
             List<Point> pointToCheck = new ArrayList<>(pawnPosition);
             pointToCheck.add(new Point(x, y - 2));
             pointsToCheck.add(pointToCheck);
-            TreeNode node = new TreeNode(new Point(x, y - 2), new Point(x, y), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam);
+            TreeNode node = new TreeNode(new Point(x, y - 2), new Point(x, y), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam, levelNum);
             nodes.add(node);
         }
 
@@ -148,7 +150,7 @@ public class MoveFinder {
             List<Point> pointToCheck = new ArrayList<>(pawnPosition);
             pointToCheck.add(new Point(x, y + 2));
             pointsToCheck.add(pointToCheck);
-            TreeNode node = new TreeNode(new Point(x, y + 2), new Point(x, y), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam);
+            TreeNode node = new TreeNode(new Point(x, y + 2), new Point(x, y), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam, levelNum);
             nodes.add(node);
         }
 
