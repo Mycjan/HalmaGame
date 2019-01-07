@@ -14,7 +14,6 @@ public class OptionsPanel extends JPanel {
     public OptionsPanel()
     {
         setLayout(new GridBagLayout());
-
     }
 
 
