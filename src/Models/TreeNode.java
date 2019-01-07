@@ -10,51 +10,46 @@ public class TreeNode {
     private Team myTeam;
     private Team concurrentTeam;
     private List<TreeNode> childrens;
+    private int levelNum;
+    private double count;
+    private Integer bestChild;
 
-    public TreeNode(List<Point> moves, Board newBoard, Team myTeam, Team concurrentTeam) {
+    public TreeNode(List<Point> moves, Board newBoard, Team myTeam, Team concurrentTeam, int levelNum) {
         this.moves = moves;
         this.newBoard = newBoard;
         this.childrens = null;
         this.myTeam = myTeam;
         this.concurrentTeam = concurrentTeam;
+        this.levelNum = levelNum;
+        this.count = Double.MIN_VALUE;
+        this.bestChild = null;
     }
 
-    public TreeNode(Point newPoint, Point oldPoint, Board oldBoard, Team myOldTeam, Team concurrentOldTeam) {
+    public TreeNode(Point newPoint, Point oldPoint, Board oldBoard, Team myOldTeam, Team concurrentOldTeam, int levelNum) {
         this.moves = Arrays.asList(oldPoint, newPoint);
         this.concurrentTeam = myOldTeam.clone();
         this.myTeam = concurrentOldTeam.clone();
-        movePawnInTeam(this.concurrentTeam, oldPoint, newPoint);
+        this.concurrentTeam.movePawnInTeam(oldPoint, newPoint);
         this.newBoard = oldBoard.clone();
-        movePawnOnBoard(this.newBoard, oldPoint, newPoint);
+        this.newBoard.movePawnOnBoard(oldPoint, newPoint);
         this.childrens = null;
+        this.levelNum = levelNum;
+        this.count = Double.MIN_VALUE;
+        this.bestChild = null;
     }
 
-    public TreeNode(Point newPoint, Point oldPoint, Board oldBoard, List<Point> moves, Team myOldTeam, Team concurrentOldTeam) {
+    public TreeNode(Point newPoint, Point oldPoint, Board oldBoard, List<Point> moves, Team myOldTeam, Team concurrentOldTeam, int levelNum) {
         moves.add(newPoint);
         this.moves = moves;
         this.concurrentTeam = myOldTeam.clone();
         this.myTeam = concurrentOldTeam.clone();
-        movePawnInTeam(this.concurrentTeam, oldPoint, newPoint);
+        this.concurrentTeam.movePawnInTeam(oldPoint, newPoint);
         this.newBoard = oldBoard.clone();
-        movePawnOnBoard(this.newBoard, oldPoint, newPoint);
+        this.newBoard.movePawnOnBoard(oldPoint, newPoint);
         this.childrens = null;
-    }
-
-    private static void movePawnInTeam(Team team, Point oldPoint, Point newPoint) {
-        for (Pawn p : team.getPawns()) {
-            if (p.getX() == (int) oldPoint.getX() && p.getY() == (int) oldPoint.getY()) {
-                p.setX((int) newPoint.getX());
-                p.setY((int) newPoint.getY());
-                return;
-            }
-        }
-
-        throw new IllegalArgumentException("Point not found in team");
-    }
-
-    private static void movePawnOnBoard(Board board, Point oldPoint, Point newPoint) {
-        board.getTiles()[(int) oldPoint.getX()][(int) oldPoint.getY()] = false;
-        board.getTiles()[(int) newPoint.getX()][(int) newPoint.getY()] = true;
+        this.levelNum = levelNum;
+        this.count = Double.MIN_VALUE;
+        this.bestChild = null;
     }
 
     public List<Point> getMoves() {
@@ -79,5 +74,25 @@ public class TreeNode {
 
     public Team getConcurrentTeam() {
         return concurrentTeam;
+    }
+
+    public int getLevelNum() {
+        return levelNum;
+    }
+
+    public double getCount() {
+        return count;
+    }
+
+    public void setCount(double count) {
+        this.count = count;
+    }
+
+    public Integer getBestChild() {
+        return bestChild;
+    }
+
+    public void setBestChild(Integer bestChild) {
+        this.bestChild = bestChild;
     }
 }

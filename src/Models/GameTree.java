@@ -1,8 +1,9 @@
 package Models;
 
-import java.io.Console;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 
 public class GameTree {
     private TreeNode root;
@@ -17,12 +18,97 @@ public class GameTree {
 
     public void bildTree(int levelCount) {
         for (int i = 0; i < levelCount; i++) {
-            long start = System.currentTimeMillis();
-            bildNextLevel(lastBuildLevel);
-            long finish = System.currentTimeMillis();
-            long timeElapsed = finish - start;
-            System.out.println(timeElapsed);
+            bildOneLevel();
         }
+    }
+
+    public void bildTree(int timeSpan, TimeUnit timeUnit) {
+        CancellableRunnable runnable;
+        runnable = new CancellableRunnable() {
+            private boolean bool;
+
+            @Override
+            public void run() {
+                bool = true;
+                while (true) {
+                    levelInBulid = new ArrayList<>();
+                    for (TreeNode t : lastBuildLevel) {
+                        if (!bool)
+                            return;
+                        findChildrens(t);
+                    }
+                    lastBuildLevel = levelInBulid;
+                }
+            }
+
+            @Override
+            public void cancel() {
+                bool = false;
+            }
+        };
+
+        ExecutorService executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                return new Thread(r) {
+                    @Override
+                    public void interrupt() {
+                        super.interrupt();
+                        runnable.cancel();
+                    }
+                };
+            }
+        });
+
+        executor.submit(runnable);
+        try {
+            executor.awaitTermination(timeSpan, timeUnit);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        executor.shutdownNow();
+    }
+
+    public List<Point> getBestMove() {
+        findBestMove(root);
+        return root.getChildres().get(root.getBestChild()).getMoves();
+    }
+
+    private void bildOneLevel() {
+        long start = System.currentTimeMillis();
+        bildNextLevel(lastBuildLevel);
+        long finish = System.currentTimeMillis();
+        long timeElapsed = finish - start;
+        System.out.println(timeElapsed);
+
+    }
+
+    private void findBestMove(TreeNode t) {
+        if (t.getChildres() == null) {
+            t.setCount(t.getMyTeam().countDistance(t.getBoard().getSize()) / t.getConcurrentTeam().countDistance(t.getBoard().getSize()));
+            return;
+        }
+
+        for (int i = 0; i < t.getChildres().size(); i++) {
+            TreeNode children = t.getChildres().get(i);
+
+            findBestMove(children);
+            switch (t.getLevelNum() % 2) {
+                case 0:
+                    if (children.getCount() < t.getCount() || t.getBestChild() == null) {
+                        t.setCount(children.getCount());
+                        t.setBestChild(i);
+                    }
+                    break;
+                case 1:
+                    if (children.getCount() > t.getCount() || t.getBestChild() == null) {
+                        t.setCount(children.getCount());
+                        t.setBestChild(i);
+                    }
+                    break;
+            }
+        }
+
     }
 
     private void bildNextLevel(List<TreeNode> thisLevel) {
@@ -34,7 +120,8 @@ public class GameTree {
     }
 
     private void findChildrens(TreeNode node) {
-        List<TreeNode> nodes = MoveFinder.GetAllMoves(node.getMyTeam(), node.getConcurrentTeam(), node.getBoard());
+        List<TreeNode> nodes = MoveFinder.GetAllMovesOnLevel(node.getMyTeam(), node.getConcurrentTeam(), node.getBoard(), node.getLevelNum() + 1);
+
         node.setChildres(nodes);
         levelInBulid.addAll(nodes);
     }
