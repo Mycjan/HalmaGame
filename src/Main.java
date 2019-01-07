@@ -14,10 +14,8 @@ public class Main {
         Team tSW = new Team(TeamDirection.SW, boardSize);
         board.placeTeam(tNE);
         board.placeTeam(tSW);
-        TreeNode root = new TreeNode(null, board, tNE, tSW, 0);
-        GameTree tree = new GameTree(root);
-        tree.bildTree(7, TimeUnit.SECONDS);
-        List<Point> moves = tree.getBestMove();
+        GameMaster gameMaster = new GameMaster();
+        gameMaster.processGame(board, tNE, tSW);
     }
 
 

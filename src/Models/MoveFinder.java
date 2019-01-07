@@ -110,8 +110,10 @@ public class MoveFinder {
     private static List<TreeNode> GetJumpMove(List<Point> pawnPosition, Board currentBoard, List<List<Point>> pointsToCheck, boolean[][] checked, Team myTeam, Team concurrentTeam, int levelNum) {
         List<TreeNode> nodes = new ArrayList<>();
 
-        int x = (int) pawnPosition.get(0).getX();
-        int y = (int) pawnPosition.get(0).getY();
+        int firstX = (int) pawnPosition.get(0).getX();
+        int firstY = (int) pawnPosition.get(0).getY();
+        int x = (int) pawnPosition.get(pawnPosition.size() - 1).getX();
+        int y = (int) pawnPosition.get(pawnPosition.size() - 1).getY();
         int size = currentBoard.getSize();
 
         //check jump right
@@ -120,7 +122,7 @@ public class MoveFinder {
             List<Point> pointToCheck = new ArrayList<>(pawnPosition);
             pointToCheck.add(new Point(x + 2, y));
             pointsToCheck.add(pointToCheck);
-            TreeNode node = new TreeNode(new Point(x + 2, y), new Point(x, y), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam, levelNum);
+            TreeNode node = new TreeNode(new Point(x + 2, y), new Point(firstX, firstY), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam, levelNum);
             nodes.add(node);
         }
 
@@ -130,7 +132,7 @@ public class MoveFinder {
             List<Point> pointToCheck = new ArrayList<>(pawnPosition);
             pointToCheck.add(new Point(x - 2, y));
             pointsToCheck.add(pointToCheck);
-            TreeNode node = new TreeNode(new Point(x - 2, y), new Point(x, y), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam, levelNum);
+            TreeNode node = new TreeNode(new Point(x - 2, y), new Point(firstX, firstY), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam, levelNum);
             nodes.add(node);
         }
 
@@ -140,7 +142,7 @@ public class MoveFinder {
             List<Point> pointToCheck = new ArrayList<>(pawnPosition);
             pointToCheck.add(new Point(x, y - 2));
             pointsToCheck.add(pointToCheck);
-            TreeNode node = new TreeNode(new Point(x, y - 2), new Point(x, y), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam, levelNum);
+            TreeNode node = new TreeNode(new Point(x, y - 2), new Point(firstX, firstY), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam, levelNum);
             nodes.add(node);
         }
 
@@ -150,7 +152,7 @@ public class MoveFinder {
             List<Point> pointToCheck = new ArrayList<>(pawnPosition);
             pointToCheck.add(new Point(x, y + 2));
             pointsToCheck.add(pointToCheck);
-            TreeNode node = new TreeNode(new Point(x, y + 2), new Point(x, y), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam, levelNum);
+            TreeNode node = new TreeNode(new Point(x, y + 2), new Point(firstX, firstY), currentBoard, new ArrayList<>(pawnPosition), myTeam, concurrentTeam, levelNum);
             nodes.add(node);
         }
 

@@ -29,9 +29,9 @@ public class TreeNode {
         this.moves = Arrays.asList(oldPoint, newPoint);
         this.concurrentTeam = myOldTeam.clone();
         this.myTeam = concurrentOldTeam.clone();
-        movePawnInTeam(this.concurrentTeam, oldPoint, newPoint);
+        this.concurrentTeam.movePawnInTeam(oldPoint, newPoint);
         this.newBoard = oldBoard.clone();
-        movePawnOnBoard(this.newBoard, oldPoint, newPoint);
+        this.newBoard.movePawnOnBoard(oldPoint, newPoint);
         this.childrens = null;
         this.levelNum = levelNum;
         this.count = Double.MIN_VALUE;
@@ -43,30 +43,13 @@ public class TreeNode {
         this.moves = moves;
         this.concurrentTeam = myOldTeam.clone();
         this.myTeam = concurrentOldTeam.clone();
-        movePawnInTeam(this.concurrentTeam, oldPoint, newPoint);
+        this.concurrentTeam.movePawnInTeam(oldPoint, newPoint);
         this.newBoard = oldBoard.clone();
-        movePawnOnBoard(this.newBoard, oldPoint, newPoint);
+        this.newBoard.movePawnOnBoard(oldPoint, newPoint);
         this.childrens = null;
         this.levelNum = levelNum;
         this.count = Double.MIN_VALUE;
         this.bestChild = null;
-    }
-
-    private static void movePawnInTeam(Team team, Point oldPoint, Point newPoint) {
-        for (Pawn p : team.getPawns()) {
-            if (p.getX() == (int) oldPoint.getX() && p.getY() == (int) oldPoint.getY()) {
-                p.setX((int) newPoint.getX());
-                p.setY((int) newPoint.getY());
-                return;
-            }
-        }
-
-        throw new IllegalArgumentException("Point not found in team");
-    }
-
-    private static void movePawnOnBoard(Board board, Point oldPoint, Point newPoint) {
-        board.getTiles()[(int) oldPoint.getX()][(int) oldPoint.getY()] = false;
-        board.getTiles()[(int) newPoint.getX()][(int) newPoint.getY()] = true;
     }
 
     public List<Point> getMoves() {
