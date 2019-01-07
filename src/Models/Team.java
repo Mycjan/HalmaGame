@@ -1,5 +1,6 @@
 package Models;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +32,22 @@ public class Team {
                 this.winDistance = teamDistance(boardSize, NETeam, TeamDirection.SW);
                 break;
         }
+    }
+
+    public double getWinDistance() {
+        return winDistance;
+    }
+
+    public void movePawnInTeam(Point oldPoint, Point newPoint) {
+        for (Pawn p : pawns) {
+            if (p.getX() == (int) oldPoint.getX() && p.getY() == (int) oldPoint.getY()) {
+                p.setX((int) newPoint.getX());
+                p.setY((int) newPoint.getY());
+                return;
+            }
+        }
+
+        throw new IllegalArgumentException("Point not found in team");
     }
 
     private static double teamDistance(int boardSize, List<Pawn> endTeam, TeamDirection direction) {

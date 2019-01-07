@@ -1,6 +1,8 @@
 import Models.*;
 
+import java.awt.*;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static void main(String[] args) {
@@ -12,9 +14,8 @@ public class Main {
         Team tSW = new Team(TeamDirection.SW, boardSize);
         board.placeTeam(tNE);
         board.placeTeam(tSW);
-        TreeNode root = new TreeNode(null, board, tNE, tSW);
-        GameTree tree = new GameTree(root);
-        tree.bildTree(10);
+        GameMaster gameMaster = new GameMaster();
+        gameMaster.processGame(board, tNE, tSW);
     }
 
 

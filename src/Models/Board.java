@@ -1,5 +1,6 @@
 package Models;
 
+import java.awt.*;
 import java.util.Arrays;
 
 public class Board {
@@ -15,6 +16,11 @@ public class Board {
         for (Pawn p : t.getPawns()) {
             tiles[p.getX()][p.getY()] = true;
         }
+    }
+
+    public void movePawnOnBoard(Point oldPoint, Point newPoint) {
+        tiles[(int) oldPoint.getX()][(int) oldPoint.getY()] = false;
+        tiles[(int) newPoint.getX()][(int) newPoint.getY()] = true;
     }
 
     public int getSize() {
