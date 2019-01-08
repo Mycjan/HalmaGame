@@ -1,5 +1,10 @@
 package Models;
 
+import Forms.GameField;
+import Forms.MainWindow;
+import com.sun.tools.javac.Main;
+
+import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -8,19 +13,42 @@ public class GameMaster {
     private Board board;
     private Team teamFirst;
     private Team teamSecond;
+    private ConfigureInformation Configuration;
+    private MainWindow GameWindow;
+    private JPanel GamePanel;
 
-    public GameMaster() {
+    public GameMaster(ConfigureInformation configuration) {
+        Configuration = configuration;
+        board = new Board(Configuration.getGameSize());
+        teamFirst = new Team(TeamDirection.NE, Configuration.getGameSize());
+        teamSecond = new Team(TeamDirection.SW, Configuration.getGameSize());
+        GamePanel = Configuration.GameWindow.getGamePanel();
+        GameWindow = Configuration.GameWindow;
     }
-
-//    public GameMaster(/*GameSettings*/) {
-//    }
 
     public void processGame(Board board, Team teamFirst, Team teamSecond) {
         int boardSize = board.getSize();
+
+        GameWindow.InitializeGameTeam(teamFirst);
+        GameWindow.InitializeGameTeam(teamSecond);
+        GameWindow.EnableTeamFields(teamFirst);
+        board.placeTeam(teamFirst);
+        board.placeTeam(teamSecond);
+
+
+ /*
         while (true) {
 
             //process teamFirst move (real player move)
             //modify board and teamFirst's pawns
+            //while player don't end his turn
+            while (true) {
+                GameWindow.EnableTeamFields(teamFirst);
+
+
+
+            }
+
 
             if (teamFirst.countDistance(boardSize) == teamFirst.getWinDistance()) {
                 //endgame message
@@ -38,7 +66,7 @@ public class GameMaster {
                 return;
             }
         }
-
+*/
     }
 
     private List<Point> countAIMove(Board board, Team teamFirst, Team teamSecond) {
@@ -72,4 +100,19 @@ public class GameMaster {
     public void setTeamSecond(Team teamSecond) {
         this.teamSecond = teamSecond;
     }
+
+    private int index(int x, int y) {
+        if (x < 0)
+            return -1;
+        if (y < 0)
+            return -1;
+        if (x > board.getSize())
+            return -1;
+        if (y > board.getSize())
+            return -1;
+
+        return x * board.getSize() + y;
+    }
+
+
 }

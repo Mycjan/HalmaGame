@@ -1,13 +1,13 @@
 package Forms;
 
-import Models.ConfigureInformation;
-import Models.DifficultyLevel;
-import Models.TeamDirection;
+import Models.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainWindow extends JFrame {
@@ -28,16 +28,25 @@ public class MainWindow extends JFrame {
     private JPanel GameViewPanel;
     private JPanel GameLabelHorizontalPanel;
     private JPanel GameLabelVerticalPanel;
-
+    private GameMaster GM;
 
     private final static int PROPERTIES_FRAME_WIDTH = 300;
     private final static int PROPERTIES_FRAME_HEIGHT = 150;
     private final static int GAME_FRAME_WIDTH = 700;
     private final static int GAME_FRAME_HEIGHT = 700;
-    private final static int GAME_FRAME_SIZE = 750;
     public final static double PROPERTIES_LAYOUT_WEIGHT = 0.05;
     public final static double GAME_LAYOUT_WEIGHT = 1;
 
+
+    private GameField CheckedField;
+
+    public GameField getCheckedField() {
+        return CheckedField;
+    }
+
+    public void setCheckedField(GameField checkedField) {
+        CheckedField = checkedField;
+    }
 
     private ConfigureInformation Configuration;
 
@@ -73,7 +82,7 @@ public class MainWindow extends JFrame {
         setResizable(true);
         setMinimumSize(new Dimension(GAME_FRAME_WIDTH, GAME_FRAME_HEIGHT));
         setPreferredSize(new Dimension(GAME_FRAME_WIDTH, GAME_FRAME_HEIGHT));
-        setMaximumSize(new Dimension(GAME_FRAME_WIDTH,GAME_FRAME_HEIGHT));
+        setMaximumSize(new Dimension(GAME_FRAME_WIDTH, GAME_FRAME_HEIGHT));
         setLocationRelativeTo(null);
         setResizable(false);
 
@@ -142,7 +151,7 @@ public class MainWindow extends JFrame {
         GameViewPanel.add(GamePanel, gameViewGBC);
         for (int i = 0; i < length; i++) {
             for (int j = 0; j < length; j++) {
-                GameField TemporaryButton = new GameField(i,j);
+                GameField TemporaryButton = new GameField(j, i, this);
                 GamePanel.add(TemporaryButton);
             }
         }
@@ -167,15 +176,25 @@ public class MainWindow extends JFrame {
         InitializeEasyDifficultyRadioButton(rootGBC);
         InitializeHardDifficultyRadioButton(rootGBC);
 
+        InitializeStartGameButton(rootGBC);
+        InitializeInstructionLabel(rootGBC);
+
+        InitializePropertiesButtonGroups();
+    }
+
+    private void InitializeStartGameButton(GridBagConstraints rootGBC) {
         StartGameButton = new JButton();
         StartGameButton.setText("Start game");
         StartGameButton.setBorder(BorderFactory.createLineBorder(Color.BLACK, 3));
         StartGameButton.addActionListener(e -> {
             int GameSize = getLength();
             DifficultyLevel difficultyLevel = getDifficultyLevel();
-            Configuration = new ConfigureInformation(GameSize, difficultyLevel);
+
+            Configuration = new ConfigureInformation(GameSize, difficultyLevel, this);
             RootPanel.removeAll();
+            GM = new GameMaster(Configuration);
             InitializeGameViewPanel(rootGBC, getLength());
+            GM.processGame(GM.getBoard(), GM.getTeamFirst(), GM.getTeamSecond());
 
         });
         rootGBC.gridx = 1;
@@ -185,11 +204,6 @@ public class MainWindow extends JFrame {
         rootGBC.weighty = PROPERTIES_LAYOUT_WEIGHT;
         rootGBC.fill = GridBagConstraints.BOTH;
         PropertiesPanel.add(StartGameButton, rootGBC);
-
-
-        InitializeInstructionLabel(rootGBC);
-
-        InitializePropertiesButtonGroups();
     }
 
     private void InitializeInstructionLabel(GridBagConstraints rootGBC) {
@@ -350,7 +364,7 @@ public class MainWindow extends JFrame {
         newGamePanel.setMaximumSize(new Dimension(GamePanelSize, GamePanelSize));
         for (int i = 0; i < length; i++) {
             for (int j = 0; j < length; j++) {
-                GameField TemporaryButton = new GameField(i,j);
+                GameField TemporaryButton = new GameField(j, i, this);
                 newGamePanel.add(TemporaryButton);
             }
         }
@@ -381,5 +395,97 @@ public class MainWindow extends JFrame {
         }
         return level;
     }
+
+    private int index(int x, int y) {
+        if (x < 0)
+            return -1;
+        if (y < 0)
+            return -1;
+        if (x > getLength())
+            return -1;
+        if (y > getLength())
+            return -1;
+
+        return y*getLength() + x;
+    }
+
+
+    //SECTION API
+
+    public JPanel getGamePanel() {
+        return GamePanel;
+    }
+
+    public void DisableAllFields() {
+        int size = getLength();
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                int index = index(i, j);
+                GameField Field = (GameField) GamePanel.getComponent(index);
+                Field.setEnabled(false);
+            }
+        }
+    }
+
+    public void InitializeGameTeam(Team team1) {
+
+        for (Pawn Pawn : team1.getPawns()) {
+            int index = index(Pawn.getX(), Pawn.getY());
+            GameField Field = (GameField) GamePanel.getComponent(index);
+            Field.setTeamPawn(team1.getDirection());
+        }
+
+    }
+
+    public GameMaster getGM() {
+        return GM;
+    }
+
+    public void EnableTeamFields(Team team) {
+        for (Pawn Pawn : team.getPawns()) {
+            GameField Field = (GameField) GamePanel.getComponent(index(Pawn.getX(), Pawn.getY()));
+            Field.AddCheckFieldListener();
+        }
+    }
+
+    public void AddPossibleMoveListeners(List<Point> PossibleMoves)
+    {
+        for (Point point : PossibleMoves)
+        {
+            GameField Field= (GameField)GamePanel.getComponent(index(point.x,point.y));
+            Field.AddMoveListeners();
+        }
+    }
+
+
+
+
+    public void HighlightAllFields(HighlightMode Mode) {
+        for (Component Component : GamePanel.getComponents()) {
+            GameField Field = (GameField) Component;
+            Field.HighlightField(Mode);
+        }
+    }
+
+    public void HighlightFields(List<Point> Fields, HighlightMode Mode) {
+        for (Point point : Fields) {
+            GameField Field = (GameField) GamePanel.getComponent(index(point.x, point.y));
+            Field.HighlightField(Mode);
+        }
+    }
+
+    public void ResetAllListeners()
+    {
+        for (Component Component : GamePanel.getComponents()) {
+            GameField Field = (GameField) Component;
+            Field.ResetListeners();
+        }
+    }
+
+    public void HighlightField(Point FieldPoint, HighlightMode Mode) {
+        GameField Field = (GameField) GamePanel.getComponent(index(FieldPoint.x, FieldPoint.y));
+        Field.HighlightField(Mode);
+    }
+
 
 }
