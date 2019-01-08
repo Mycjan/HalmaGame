@@ -44,14 +44,15 @@ public class GameField extends JButton {
     }
 
     public void setTeamPawn(TeamDirection team) {
+        String CurrentWorkingDirectory = System.getProperty("user.dir") + "\\src\\Resources";
         Image img = null;
         try {
             if (team == TeamDirection.SW) {
-                // img = ImageIO.read(getClass().getResource("C:\\Users\\Damian\\Documents\\GitHub\\HalmaGame\\src\\Resources\\pionek1.jpg"));
-                img = ImageIO.read(new File("C:\\Users\\Damian\\Documents\\GitHub\\HalmaGame\\src\\Resources\\pionek2.jpg"));
+                String path = CurrentWorkingDirectory + "\\pionek2.jpg";
+                img = ImageIO.read(new File(path));
             } else if (team == TeamDirection.NE) {
-                //img = ImageIO.read(getClass().getResource("C:\\Users\\Damian\\Documents\\GitHub\\HalmaGame\\src\\Resources\\pionek2.jpg"));
-                img = ImageIO.read(new File("C:\\Users\\Damian\\Documents\\GitHub\\HalmaGame\\src\\Resources\\pionek1.jpg"));
+                String path = CurrentWorkingDirectory + "\\pionek1.jpg";
+                img = ImageIO.read(new File(path));
             }
         } catch (Exception ex) {
             System.out.println("Image not found");
@@ -68,18 +69,17 @@ public class GameField extends JButton {
     public void CheckFieldAtTurnStart() {
         GameWindow.HighlightAllFields(HighlightMode.HighlightNone);
         HighlightField(HighlightMode.HighlightPawn);
-        List<Point> PossibleMoves=GameWindow.getGM().getBoard().PossibleMovesFromPoint(new Point(xPosition, yPosition),true);
+        List<Point> PossibleMoves = GameWindow.getGM().getBoard().PossibleMovesFromPoint(new Point(xPosition, yPosition), true);
         GameWindow.HighlightFields(PossibleMoves, HighlightMode.HighlightPossibleMove);
         GameWindow.AddPossibleMoveListeners(PossibleMoves);
         GameWindow.setCheckedField(this);
     }
 
-    public void MoveTo()
-    {
+    public void MoveTo() {
         GameWindow.HighlightAllFields(HighlightMode.HighlightNone);
         GameWindow.ResetAllListeners();
         HighlightField(HighlightMode.HighlightPawn);
-        GameWindow.HighlightFields(GameWindow.getGM().getBoard().PossibleMovesFromPoint(new Point(xPosition,yPosition),false),HighlightMode.HighlightPossibleMove);
+        GameWindow.HighlightFields(GameWindow.getGM().getBoard().PossibleMovesFromPoint(new Point(xPosition, yPosition), false), HighlightMode.HighlightPossibleMove);
         GameWindow.getCheckedField().ClearField();
         this.setTeamPawn(GameWindow.getGM().getTeamFirst().getDirection());
     }
@@ -88,9 +88,8 @@ public class GameField extends JButton {
         addActionListener(e -> CheckFieldAtTurnStart());
     }
 
-    public void AddMoveListeners()
-    {
-        addActionListener(e->MoveTo());
+    public void AddMoveListeners() {
+        addActionListener(e -> MoveTo());
     }
 
     public void ResetListeners() {
