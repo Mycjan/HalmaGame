@@ -1,5 +1,6 @@
 package Forms;
 
+import Models.GameMaster;
 import Models.TeamDirection;
 
 import javax.imageio.ImageIO;
@@ -11,6 +12,7 @@ import java.util.List;
 
 public class GameField extends JButton {
 
+    private Point Position;
     private int xPosition;
     private int yPosition;
     private MainWindow GameWindow;
@@ -20,8 +22,8 @@ public class GameField extends JButton {
         this.xPosition = xPosition;
         this.yPosition = yPosition;
         this.GameWindow = GameWindow;
-
         setBorder(BorderFactory.createLineBorder(Color.black, 1));
+        Position = new Point(xPosition, yPosition);
     }
 
     public void HighlightField(HighlightMode mode) {
@@ -41,6 +43,14 @@ public class GameField extends JButton {
     public void ClearField() {
         setBorder(BorderFactory.createLineBorder(Color.black, 1));
         setIcon(null);
+    }
+
+    public Point getPosition() {
+        return Position;
+    }
+
+    public void setPosition(Point position) {
+        Position = position;
     }
 
     public void setTeamPawn(TeamDirection team) {
@@ -71,21 +81,45 @@ public class GameField extends JButton {
         HighlightField(HighlightMode.HighlightPawn);
         List<Point> PossibleMoves = GameWindow.getGM().getBoard().PossibleMovesFromPoint(new Point(xPosition, yPosition), true);
         GameWindow.HighlightFields(PossibleMoves, HighlightMode.HighlightPossibleMove);
+        GameWindow.ResetListenersOnFields(GameWindow.getHighlightedPossibleMoves());
         GameWindow.AddPossibleMoveListeners(PossibleMoves);
         GameWindow.setCheckedField(this);
     }
 
+    public void CheckFieldTurnContinue() {
+        GameWindow.HighlightAllFields(HighlightMode.HighlightNone);
+        HighlightField(HighlightMode.HighlightPawn);
+        List<Point> PossibleMoves = GameWindow.getGM().getBoard().PossibleMovesFromPoint(new Point(xPosition, yPosition), false);
+        if (PossibleMoves.size() == 0) {
+            GameWindow.setPlayerTurnEnded(true);
+            GameWindow.getGM().nextUserTurn();
+
+        } else {
+            GameWindow.HighlightFields(PossibleMoves, HighlightMode.HighlightPossibleMove);
+            GameWindow.ResetListenersOnFields(GameWindow.getHighlightedPossibleMoves());
+            GameWindow.AddPossibleMoveListeners(PossibleMoves);
+            GameWindow.setCheckedField(this);
+        }
+    }
+
+
     public void MoveTo() {
+        GameWindow.getGM().getBoard().movePawnOnBoard(GameWindow.getCheckedField().getPosition(), this.Position);
         GameWindow.HighlightAllFields(HighlightMode.HighlightNone);
         GameWindow.ResetAllListeners();
-        HighlightField(HighlightMode.HighlightPawn);
-        GameWindow.HighlightFields(GameWindow.getGM().getBoard().PossibleMovesFromPoint(new Point(xPosition, yPosition), false), HighlightMode.HighlightPossibleMove);
         GameWindow.getCheckedField().ClearField();
+        GameWindow.setCheckedField(this);
+        this.AddCheckFieldContinueListener();
+        this.doClick();
         this.setTeamPawn(GameWindow.getGM().getTeamFirst().getDirection());
     }
 
     public void AddCheckFieldListener() {
         addActionListener(e -> CheckFieldAtTurnStart());
+    }
+
+    public void AddCheckFieldContinueListener() {
+        addActionListener(e -> CheckFieldTurnContinue());
     }
 
     public void AddMoveListeners() {

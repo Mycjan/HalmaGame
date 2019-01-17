@@ -26,6 +26,15 @@ public class GameMaster {
         GameWindow = Configuration.GameWindow;
     }
 
+
+    public void nextUserTurn()
+    {
+        GameWindow.EnableTeamFields(teamFirst);
+    }
+
+
+
+
     public void processGame(Board board, Team teamFirst, Team teamSecond) {
         int boardSize = board.getSize();
 
@@ -36,9 +45,9 @@ public class GameMaster {
         board.placeTeam(teamSecond);
 
 
+
  /*
         while (true) {
-
             //process teamFirst move (real player move)
             //modify board and teamFirst's pawns
             //while player don't end his turn

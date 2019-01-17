@@ -6,6 +6,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,8 +39,31 @@ public class MainWindow extends JFrame {
     public final static double PROPERTIES_LAYOUT_WEIGHT = 0.05;
     public final static double GAME_LAYOUT_WEIGHT = 1;
 
-
+    private List<Point> HighlightedPossibleMoves= new ArrayList<>();
     private GameField CheckedField;
+    private ConfigureInformation Configuration;
+    private Boolean IsPlayerTurnEnded=false;
+
+    private Thread Game;
+
+
+
+
+    public Boolean getPlayerTurnEnded() {
+        return IsPlayerTurnEnded;
+    }
+
+    public void setPlayerTurnEnded(Boolean playerTurnEnded) {
+        IsPlayerTurnEnded = playerTurnEnded;
+    }
+
+    public List<Point> getHighlightedPossibleMoves() {
+        return HighlightedPossibleMoves;
+    }
+
+    public void setHighlightedPossibleMoves(List<Point> highlightedPossibleMoves) {
+        HighlightedPossibleMoves = highlightedPossibleMoves;
+    }
 
     public GameField getCheckedField() {
         return CheckedField;
@@ -47,8 +72,6 @@ public class MainWindow extends JFrame {
     public void setCheckedField(GameField checkedField) {
         CheckedField = checkedField;
     }
-
-    private ConfigureInformation Configuration;
 
 
     private void createUIComponents() {
@@ -60,6 +83,7 @@ public class MainWindow extends JFrame {
         //Main window properties
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+
 
         setMinimumSize(new Dimension(PROPERTIES_FRAME_WIDTH, PROPERTIES_FRAME_HEIGHT));
         setPreferredSize(new Dimension(PROPERTIES_FRAME_WIDTH, PROPERTIES_FRAME_HEIGHT));
@@ -155,6 +179,16 @@ public class MainWindow extends JFrame {
                 GamePanel.add(TemporaryButton);
             }
         }
+
+        KeyStroke keyStroke= KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,0);
+        ActionListener SpaceListener= new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //setPlayerTurnEnded(true);
+                //getGM().nextUserTurn();
+            }
+        };
+        RootPanel.registerKeyboardAction(SpaceListener,keyStroke,JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
     private void InitializePropertiesPanel(GridBagConstraints rootGBC) {
@@ -406,7 +440,7 @@ public class MainWindow extends JFrame {
         if (y > getLength())
             return -1;
 
-        return y*getLength() + x;
+        return y * getLength() + x;
     }
 
 
@@ -448,17 +482,13 @@ public class MainWindow extends JFrame {
         }
     }
 
-    public void AddPossibleMoveListeners(List<Point> PossibleMoves)
-    {
-        for (Point point : PossibleMoves)
-        {
-            GameField Field= (GameField)GamePanel.getComponent(index(point.x,point.y));
+    public void AddPossibleMoveListeners(List<Point> PossibleMoves) {
+        HighlightedPossibleMoves = PossibleMoves;
+        for (Point point : PossibleMoves) {
+            GameField Field = (GameField) GamePanel.getComponent(index(point.x, point.y));
             Field.AddMoveListeners();
         }
     }
-
-
-
 
     public void HighlightAllFields(HighlightMode Mode) {
         for (Component Component : GamePanel.getComponents()) {
@@ -474,18 +504,31 @@ public class MainWindow extends JFrame {
         }
     }
 
-    public void ResetAllListeners()
-    {
+    public void ResetAllListeners() {
         for (Component Component : GamePanel.getComponents()) {
             GameField Field = (GameField) Component;
             Field.ResetListeners();
         }
     }
 
+    public void ResetListenersOnFields(List<Point> Fields)
+    {
+        for(Point fieldPoint : Fields)
+        {
+            GameField Field=(GameField)GamePanel.getComponent(index(fieldPoint.x,fieldPoint.y));
+            Field.ResetListeners();
+        }
+    }
+
+
     public void HighlightField(Point FieldPoint, HighlightMode Mode) {
         GameField Field = (GameField) GamePanel.getComponent(index(FieldPoint.x, FieldPoint.y));
         Field.HighlightField(Mode);
     }
+
+
+
+
 
 
 }
