@@ -39,14 +39,32 @@ public class MainWindow extends JFrame {
     public final static double PROPERTIES_LAYOUT_WEIGHT = 0.05;
     public final static double GAME_LAYOUT_WEIGHT = 1;
 
-    private List<Point> HighlightedPossibleMoves= new ArrayList<>();
+    private List<Point> HighlightedPossibleMoves = new ArrayList<>();
     private GameField CheckedField;
     private ConfigureInformation Configuration;
-    private Boolean IsPlayerTurnEnded=false;
-
+    private Boolean IsPlayerTurnEnded = false;
     private Thread Game;
 
 
+    public void ComputerTurnDisplay(List<Point> Moves) {
+        if (Moves.size() < 2)
+            return;
+        Point From = Moves.get(0);
+        GameField FromField = (GameField) GamePanel.getComponent(index(From.x, From.y));
+        for (int i = 1; i < Moves.size(); i++) {
+            Point To = Moves.get(i);
+            GameField ToField = (GameField) GamePanel.getComponent(index(To.x, To.y));
+            FromField.ClearField();
+            ToField.setTeamPawn(GM.getTeamSecond().getDirection());
+            try {
+               Thread.sleep(1000);
+            } catch (Exception e) {
+                System.out.printf(e.getMessage());
+            }
+            From = To;
+            FromField = ToField;
+        }
+    }
 
 
     public Boolean getPlayerTurnEnded() {
@@ -72,7 +90,6 @@ public class MainWindow extends JFrame {
     public void setCheckedField(GameField checkedField) {
         CheckedField = checkedField;
     }
-
 
     private void createUIComponents() {
 
@@ -179,16 +196,19 @@ public class MainWindow extends JFrame {
                 GamePanel.add(TemporaryButton);
             }
         }
+        AddEnterListener();
+    }
 
-        KeyStroke keyStroke= KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,0);
-        ActionListener SpaceListener= new ActionListener() {
+    private void AddEnterListener() {
+        KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        ActionListener SpaceListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //setPlayerTurnEnded(true);
-                //getGM().nextUserTurn();
+                GM.endUserTurn();
+                GM.nextUserTurn();
             }
         };
-        RootPanel.registerKeyboardAction(SpaceListener,keyStroke,JComponent.WHEN_IN_FOCUSED_WINDOW);
+        RootPanel.registerKeyboardAction(SpaceListener, keyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
     private void InitializePropertiesPanel(GridBagConstraints rootGBC) {
@@ -228,7 +248,16 @@ public class MainWindow extends JFrame {
             RootPanel.removeAll();
             GM = new GameMaster(Configuration);
             InitializeGameViewPanel(rootGBC, getLength());
-            GM.processGame(GM.getBoard(), GM.getTeamFirst(), GM.getTeamSecond());
+
+
+            Thread GameThread=new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    GM.processGame(GM.getBoard(), GM.getTeamFirst(), GM.getTeamSecond());
+                }
+            });
+            GameThread.start();
+
 
         });
         rootGBC.gridx = 1;
@@ -511,24 +540,17 @@ public class MainWindow extends JFrame {
         }
     }
 
-    public void ResetListenersOnFields(List<Point> Fields)
-    {
-        for(Point fieldPoint : Fields)
-        {
-            GameField Field=(GameField)GamePanel.getComponent(index(fieldPoint.x,fieldPoint.y));
+    public void ResetListenersOnFields(List<Point> Fields) {
+        for (Point fieldPoint : Fields) {
+            GameField Field = (GameField) GamePanel.getComponent(index(fieldPoint.x, fieldPoint.y));
             Field.ResetListeners();
         }
     }
-
 
     public void HighlightField(Point FieldPoint, HighlightMode Mode) {
         GameField Field = (GameField) GamePanel.getComponent(index(FieldPoint.x, FieldPoint.y));
         Field.HighlightField(Mode);
     }
-
-
-
-
 
 
 }

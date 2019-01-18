@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GameField extends JButton {
@@ -92,11 +93,11 @@ public class GameField extends JButton {
         List<Point> PossibleMoves = GameWindow.getGM().getBoard().PossibleMovesFromPoint(new Point(xPosition, yPosition), false);
         if (PossibleMoves.size() == 0) {
             GameWindow.setPlayerTurnEnded(true);
+            GameWindow.getGM().endUserTurn();
             GameWindow.getGM().nextUserTurn();
 
         } else {
             GameWindow.HighlightFields(PossibleMoves, HighlightMode.HighlightPossibleMove);
-            GameWindow.ResetListenersOnFields(GameWindow.getHighlightedPossibleMoves());
             GameWindow.AddPossibleMoveListeners(PossibleMoves);
             GameWindow.setCheckedField(this);
         }
@@ -105,14 +106,34 @@ public class GameField extends JButton {
 
     public void MoveTo() {
         GameWindow.getGM().getBoard().movePawnOnBoard(GameWindow.getCheckedField().getPosition(), this.Position);
+        GameWindow.getGM().getTeamFirst().movePawnInTeam(GameWindow.getCheckedField().getPosition(), this.Position);
         GameWindow.HighlightAllFields(HighlightMode.HighlightNone);
-        GameWindow.ResetAllListeners();
+        GameWindow.getHighlightedPossibleMoves().remove(new Point(xPosition, yPosition));
+        Point From = GameWindow.getCheckedField().getPosition();
+        Point To = this.Position;
         GameWindow.getCheckedField().ClearField();
         GameWindow.setCheckedField(this);
-        this.AddCheckFieldContinueListener();
-        this.doClick();
+
         this.setTeamPawn(GameWindow.getGM().getTeamFirst().getDirection());
+
+
+
+        if (IsMoveShort(From, To)) {
+            GameWindow.getGM().endUserTurn();
+            GameWindow.getGM().nextUserTurn();
+        } else {
+            GameWindow.ResetAllListeners();
+            this.AddCheckFieldContinueListener();
+            this.doClick();
+        }
     }
+
+    public Boolean IsMoveShort(Point from, Point to) {
+        if (Math.abs(from.x - to.x) == 1 || Math.abs(from.y - to.y) == 1)
+            return true;
+        return false;
+    }
+
 
     public void AddCheckFieldListener() {
         addActionListener(e -> CheckFieldAtTurnStart());

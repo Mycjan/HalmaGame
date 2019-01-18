@@ -1,11 +1,13 @@
 package Models;
 
 import Forms.GameField;
+import Forms.HighlightMode;
 import Forms.MainWindow;
 import com.sun.tools.javac.Main;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -27,12 +29,14 @@ public class GameMaster {
     }
 
 
-    public void nextUserTurn()
-    {
+    public void nextUserTurn() {
         GameWindow.EnableTeamFields(teamFirst);
     }
 
-
+    public void endUserTurn() {
+        GameWindow.ResetAllListeners();
+        GameWindow.HighlightAllFields(HighlightMode.HighlightNone);
+    }
 
 
     public void processGame(Board board, Team teamFirst, Team teamSecond) {
@@ -43,6 +47,30 @@ public class GameMaster {
         GameWindow.EnableTeamFields(teamFirst);
         board.placeTeam(teamFirst);
         board.placeTeam(teamSecond);
+
+        try {
+            Thread.sleep(2000);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        List<Point> FirstExampleComputerMove = new ArrayList<Point>();
+        FirstExampleComputerMove.add(new Point(5, 0));
+        FirstExampleComputerMove.add(new Point(5, 2));
+        FirstExampleComputerMove.add(new Point(5, 3));
+        FirstExampleComputerMove.add(new Point(5, 4));
+        List<Point> SecondExampleComputerMove = new ArrayList<Point>();
+        SecondExampleComputerMove.add(new Point(6, 2));
+        SecondExampleComputerMove.add(new Point(4, 2));
+
+        Thread first = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                GameWindow.ComputerTurnDisplay(FirstExampleComputerMove);
+                GameWindow.ComputerTurnDisplay(SecondExampleComputerMove);
+            }
+        });
+        first.start();
+
 
 
 
