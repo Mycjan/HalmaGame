@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class GameField extends JButton {
 
@@ -119,8 +120,7 @@ public class GameField extends JButton {
 
 
         if (IsMoveShort(From, To)) {
-            GameWindow.getGM().endUserTurn();
-            GameWindow.getGM().nextUserTurn();
+            GameWindow.getGM().processGame();
         } else {
             GameWindow.ResetAllListeners();
             this.AddCheckFieldContinueListener();

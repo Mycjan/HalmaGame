@@ -7,9 +7,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 public class MainWindow extends JFrame {
@@ -204,8 +204,7 @@ public class MainWindow extends JFrame {
         ActionListener SpaceListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                GM.endUserTurn();
-                GM.nextUserTurn();
+             GM.processGame();
             }
         };
         RootPanel.registerKeyboardAction(SpaceListener, keyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -253,7 +252,7 @@ public class MainWindow extends JFrame {
             Thread GameThread=new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    GM.processGame(GM.getBoard(), GM.getTeamFirst(), GM.getTeamSecond());
+                    GM.prepareGame(GM.getBoard(), GM.getTeamFirst(), GM.getTeamSecond());
                 }
             });
             GameThread.start();
