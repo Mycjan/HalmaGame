@@ -7,9 +7,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 
 public class MainWindow extends JFrame {
@@ -42,37 +42,94 @@ public class MainWindow extends JFrame {
     private List<Point> HighlightedPossibleMoves = new ArrayList<>();
     private GameField CheckedField;
     private ConfigureInformation Configuration;
-    private Boolean IsPlayerTurnEnded = false;
-    private Thread Game;
+
+    public Boolean getItPossibleToEndTurn() {
+        return IsItPossibleToEndTurn;
+    }
+
+    public void setItPossibleToEndTurn(Boolean itPossibleToEndTurn) {
+        IsItPossibleToEndTurn = itPossibleToEndTurn;
+    }
+
+    private Boolean IsItPossibleToEndTurn = false;
+
+    private GameField FromField;
 
 
     public void ComputerTurnDisplay(List<Point> Moves) {
         if (Moves.size() < 2)
             return;
         Point From = Moves.get(0);
-        GameField FromField = (GameField) GamePanel.getComponent(index(From.x, From.y));
+        FromField = (GameField) GamePanel.getComponent(index(From.x, From.y));
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    FromField.HighlightField(HighlightMode.HighlightPawn);
+                    try {
+                        Thread.sleep(Configuration.getTurnDisplayTime());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
         for (int i = 1; i < Moves.size(); i++) {
             Point To = Moves.get(i);
             GameField ToField = (GameField) GamePanel.getComponent(index(To.x, To.y));
-            FromField.ClearField();
-            ToField.setTeamPawn(GM.getTeamSecond().getDirection());
             try {
-               Thread.sleep(1000);
-            } catch (Exception e) {
-                System.out.printf(e.getMessage());
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        FromField.ClearField();
+                        ToField.setTeamPawn(GM.getTeamSecond().getDirection());
+                        ToField.HighlightField(HighlightMode.HighlightPawn);
+                        revalidate();
+                        try {
+                            Thread.sleep(Configuration.getTurnDisplayTime());
+                        } catch (Exception e) {
+                            System.out.printf(e.getMessage());
+                        }
+
+                    }
+                });
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
             }
-            From = To;
             FromField = ToField;
         }
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(Configuration.getTurnDisplayTime());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    FromField.HighlightField(HighlightMode.HighlightNone);
+                }
+            });
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
     }
 
-
     public Boolean getPlayerTurnEnded() {
-        return IsPlayerTurnEnded;
+        return IsItPossibleToEndTurn;
     }
 
     public void setPlayerTurnEnded(Boolean playerTurnEnded) {
-        IsPlayerTurnEnded = playerTurnEnded;
+        IsItPossibleToEndTurn = playerTurnEnded;
     }
 
     public List<Point> getHighlightedPossibleMoves() {
@@ -204,7 +261,14 @@ public class MainWindow extends JFrame {
         ActionListener SpaceListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-             GM.processGame();
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (IsItPossibleToEndTurn)
+                            GM.processGame();
+                    }
+                });
+                thread.start();
             }
         };
         RootPanel.registerKeyboardAction(SpaceListener, keyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -243,13 +307,13 @@ public class MainWindow extends JFrame {
             int GameSize = getLength();
             DifficultyLevel difficultyLevel = getDifficultyLevel();
 
-            Configuration = new ConfigureInformation(GameSize, difficultyLevel, this);
+            Configuration = new ConfigureInformation(GameSize, difficultyLevel, this, 1000);
             RootPanel.removeAll();
             GM = new GameMaster(Configuration);
             InitializeGameViewPanel(rootGBC, getLength());
 
 
-            Thread GameThread=new Thread(new Runnable() {
+            Thread GameThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     GM.prepareGame(GM.getBoard(), GM.getTeamFirst(), GM.getTeamSecond());

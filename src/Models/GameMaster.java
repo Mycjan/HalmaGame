@@ -6,7 +6,9 @@ import Forms.MainWindow;
 import com.sun.tools.javac.Main;
 
 import javax.swing.*;
+import javax.swing.text.Utilities;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +33,7 @@ public class GameMaster {
 
     public void nextUserTurn() {
         GameWindow.EnableTeamFields(teamFirst);
+        GameWindow.setItPossibleToEndTurn(false);
     }
 
     public void endUserTurn() {
@@ -73,10 +76,10 @@ public class GameMaster {
 
 
 
- /*
+        /*
 
 
-           */
+         */
 
     }
 
@@ -112,13 +115,26 @@ public class GameMaster {
 
 
     public void processGame() {
-        endUserTurn();
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    endUserTurn();
+                }
+            });
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
         if (CheckWinCondition(teamFirst))
             return;
         MakeAIMove();
         if (CheckWinCondition(teamSecond))
             return;
         nextUserTurn();
+
+
     }
 
     private boolean CheckWinCondition(Team team) {

@@ -44,6 +44,7 @@ public class GameField extends JButton {
 
     public void ClearField() {
         setBorder(BorderFactory.createLineBorder(Color.black, 1));
+        HighlightField(HighlightMode.HighlightNone);
         setIcon(null);
     }
 
@@ -92,18 +93,13 @@ public class GameField extends JButton {
         GameWindow.HighlightAllFields(HighlightMode.HighlightNone);
         HighlightField(HighlightMode.HighlightPawn);
         List<Point> PossibleMoves = GameWindow.getGM().getBoard().PossibleMovesFromPoint(new Point(xPosition, yPosition), false);
-        if (PossibleMoves.size() == 0) {
-            GameWindow.setPlayerTurnEnded(true);
-            GameWindow.getGM().endUserTurn();
-            GameWindow.getGM().nextUserTurn();
+        GameWindow.HighlightFields(PossibleMoves, HighlightMode.HighlightPossibleMove);
+        GameWindow.AddPossibleMoveListeners(PossibleMoves);
+        GameWindow.setCheckedField(this);
+        AddEndTurnListener();
+        GameWindow.setItPossibleToEndTurn(true);
 
-        } else {
-            GameWindow.HighlightFields(PossibleMoves, HighlightMode.HighlightPossibleMove);
-            GameWindow.AddPossibleMoveListeners(PossibleMoves);
-            GameWindow.setCheckedField(this);
-        }
     }
-
 
     public void MoveTo() {
         GameWindow.getGM().getBoard().movePawnOnBoard(GameWindow.getCheckedField().getPosition(), this.Position);
@@ -118,14 +114,29 @@ public class GameField extends JButton {
         this.setTeamPawn(GameWindow.getGM().getTeamFirst().getDirection());
 
 
-
         if (IsMoveShort(From, To)) {
-            GameWindow.getGM().processGame();
+            Thread thread= new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    GameWindow.getGM().processGame();
+                }
+            });
+            thread.start();
         } else {
             GameWindow.ResetAllListeners();
             this.AddCheckFieldContinueListener();
             this.doClick();
         }
+    }
+
+    public void EndTurn() {
+        Thread thread= new Thread(new Runnable() {
+            @Override
+            public void run() {
+                GameWindow.getGM().processGame();
+            }
+        });
+        thread.start();
     }
 
     public Boolean IsMoveShort(Point from, Point to) {
@@ -134,13 +145,17 @@ public class GameField extends JButton {
         return false;
     }
 
-
     public void AddCheckFieldListener() {
         addActionListener(e -> CheckFieldAtTurnStart());
     }
 
     public void AddCheckFieldContinueListener() {
         addActionListener(e -> CheckFieldTurnContinue());
+    }
+
+    public void AddEndTurnListener()
+    {
+        addActionListener(e->EndTurn());
     }
 
     public void AddMoveListeners() {
