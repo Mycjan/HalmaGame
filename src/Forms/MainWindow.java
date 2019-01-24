@@ -3,13 +3,19 @@ package Forms;
 import Models.*;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.HierarchyListener;
 import java.awt.event.KeyEvent;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 
 public class MainWindow extends JFrame {
@@ -33,10 +39,10 @@ public class MainWindow extends JFrame {
     private JPanel GameLabelVerticalPanel;
     private GameMaster GM;
 
-    private final static int PROPERTIES_FRAME_WIDTH = 500;
-    private final static int PROPERTIES_FRAME_HEIGHT = 300;
+    private final static int PROPERTIES_FRAME_WIDTH = 800;
+    private final static int PROPERTIES_FRAME_HEIGHT = 500;
     private final static int GAME_FRAME_WIDTH = 700;
-    private final static int GAME_FRAME_HEIGHT = 700;
+    private final static int GAME_FRAME_HEIGHT = 710;
     public final static double PROPERTIES_LAYOUT_WEIGHT = 0.05;
     public final static double GAME_LAYOUT_WEIGHT = 1;
 
@@ -49,74 +55,6 @@ public class MainWindow extends JFrame {
 
     public void setItPossibleToEndTurn(Boolean itPossibleToEndTurn) {
         IsItPossibleToEndTurn = itPossibleToEndTurn;
-    }
-
-    public void ComputerTurnDisplay(List<Point> Moves) {
-        if (Moves.size() < 2)
-            return;
-        Point From = Moves.get(0);
-        FromField = (GameField) GamePanel.getComponent(index(From.x, From.y));
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    FromField.HighlightField(HighlightMode.HighlightPawn);
-                    try {
-                        Thread.sleep(Configuration.getTurnDisplayTime());
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        for (int i = 1; i < Moves.size(); i++) {
-            Point To = Moves.get(i);
-            GameField ToField = (GameField) GamePanel.getComponent(index(To.x, To.y));
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    @Override
-                    public void run() {
-                        FromField.ClearField();
-                        ToField.setTeamPawn(GM.getTeamSecond().getDirection());
-                        ToField.HighlightField(HighlightMode.HighlightPawn);
-                        revalidate();
-                        try {
-                            Thread.sleep(Configuration.getTurnDisplayTime());
-                        } catch (Exception e) {
-                            System.out.printf(e.getMessage());
-                        }
-
-                    }
-                });
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-            FromField = ToField;
-        }
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Thread.sleep(Configuration.getTurnDisplayTime());
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    FromField.HighlightField(HighlightMode.HighlightNone);
-                }
-            });
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
-
     }
 
     public List<Point> getHighlightedPossibleMoves() {
@@ -139,13 +77,12 @@ public class MainWindow extends JFrame {
 
         //Main window properties
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-
-
         setMinimumSize(new Dimension(PROPERTIES_FRAME_WIDTH, PROPERTIES_FRAME_HEIGHT));
         setPreferredSize(new Dimension(PROPERTIES_FRAME_WIDTH, PROPERTIES_FRAME_HEIGHT));
         setMaximumSize(new Dimension(PROPERTIES_FRAME_WIDTH, PROPERTIES_FRAME_HEIGHT));
         setResizable(false);
+        setLocationRelativeTo(null);
+
 
         //RootPanel properties
         RootPanel = new JPanel();
@@ -314,18 +251,33 @@ public class MainWindow extends JFrame {
         rootGBC.weighty = PROPERTIES_LAYOUT_WEIGHT;
         rootGBC.fill = GridBagConstraints.BOTH;
         PropertiesPanel.add(StartGameButton, rootGBC);
-        StartGameButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(PropertiesPanel,"Win first team");
-
-            }
-        });
     }
 
     private void InitializeInstructionLabel(GridBagConstraints rootGBC) {
+
         InstructionLabel = new JLabel();
-        InstructionLabel.setText("This is place for instructions");
+        String CurrentWorkingDirectory = System.getProperty("user.dir") + "\\src\\Resources";
+        String path = CurrentWorkingDirectory + "\\instrukcja.txt";
+        String instruction = "<html>";
+        try {
+            File file = new File(path);
+            BufferedReader br = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(file), "UTF-8"));
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                instruction += line;
+            }
+
+
+        } catch (Exception e) {
+            System.err.println("Wystapil blad przy wczytywaniu danych");
+            e.printStackTrace();
+        }
+
+        InstructionLabel.setText(instruction);
+        Border border = InstructionLabel.getBorder();
+        Border margin = new EmptyBorder(10, 10, 10, 10);
+        InstructionLabel.setBorder(new CompoundBorder(border, margin));
         rootGBC.gridx = 0;
         rootGBC.gridy = 0;
         rootGBC.gridwidth = 4;
@@ -421,46 +373,6 @@ public class MainWindow extends JFrame {
         PropertiesPanel.add(Size8RadioButton, rootGBC);
     }
 
-    private void ResizeGame(int length) {
-        ResizeGamePanel(length);
-        ResizeGameLabelHorizontalPanel(length);
-        ResizeGameLabelVerticalPanel(length);
-    }
-
-    private void ResizeGameLabelVerticalPanel(int length) {
-        JPanel NewGameLabelVerticalPanel = new JPanel(new GridLayout(length, 1));
-        char FirstLetter = 'A';
-        for (int i = 0; i < length; i++) {
-            JLabel TempLabel = new JLabel();
-            TempLabel.setText("" + FirstLetter);
-            FirstLetter++;
-            setLabelProperties(TempLabel);
-            NewGameLabelVerticalPanel.add(TempLabel);
-        }
-        GridBagLayout Layout = (GridBagLayout) GameViewPanel.getLayout();
-        GridBagConstraints GameViewGBC = Layout.getConstraints(GameLabelVerticalPanel);
-        GameViewPanel.remove(GameLabelVerticalPanel);
-        GameLabelVerticalPanel = NewGameLabelVerticalPanel;
-        GameViewPanel.add(GameLabelVerticalPanel, GameViewGBC);
-        GameViewPanel.revalidate();
-    }
-
-    private void ResizeGameLabelHorizontalPanel(int length) {
-        JPanel NewGameLabelHorizontalPanel = new JPanel(new GridLayout(1, length));
-        for (int i = 0; i < length; i++) {
-            JLabel TempLabel = new JLabel();
-            TempLabel.setText("" + i);
-            setLabelProperties(TempLabel);
-            NewGameLabelHorizontalPanel.add(TempLabel);
-        }
-        GridBagLayout Layout = (GridBagLayout) GameViewPanel.getLayout();
-        GridBagConstraints GameViewGBC = Layout.getConstraints(GameLabelHorizontalPanel);
-        GameViewPanel.remove(GameLabelHorizontalPanel);
-        GameLabelHorizontalPanel = NewGameLabelHorizontalPanel;
-        GameViewPanel.add(GameLabelHorizontalPanel, GameViewGBC);
-        GameViewPanel.revalidate();
-    }
-
     private void setLabelProperties(JLabel tempLabel) {
         tempLabel.setHorizontalAlignment(SwingConstants.CENTER);
         tempLabel.setVerticalAlignment(SwingConstants.CENTER);
@@ -468,27 +380,6 @@ public class MainWindow extends JFrame {
         int LabelSize = 30;
         tempLabel.setMinimumSize(new Dimension(LabelSize, LabelSize));
         tempLabel.setPreferredSize(new Dimension(LabelSize, LabelSize));
-    }
-
-    private void ResizeGamePanel(int length) {
-        JPanel newGamePanel = new JPanel();
-        newGamePanel.setLayout(new GridLayout(length, length));
-        int GamePanelSize = 600;
-        newGamePanel.setMinimumSize(new Dimension(GamePanelSize, GamePanelSize));
-        newGamePanel.setPreferredSize(new Dimension(GamePanelSize, GamePanelSize));
-        newGamePanel.setMaximumSize(new Dimension(GamePanelSize, GamePanelSize));
-        for (int i = 0; i < length; i++) {
-            for (int j = 0; j < length; j++) {
-                GameField TemporaryButton = new GameField(j, i, this);
-                newGamePanel.add(TemporaryButton);
-            }
-        }
-        GridBagLayout Layout = (GridBagLayout) GameViewPanel.getLayout();
-        GridBagConstraints GameViewGBC = Layout.getConstraints(GamePanel);
-        GameViewPanel.remove(GamePanel);
-        GamePanel = newGamePanel;
-        GameViewPanel.add(GamePanel, GameViewGBC);
-        GameViewPanel.revalidate();
     }
 
     private int getLength() {
@@ -524,22 +415,10 @@ public class MainWindow extends JFrame {
         return y * getLength() + x;
     }
 
-
     //SECTION API
 
     public JPanel getGamePanel() {
         return GamePanel;
-    }
-
-    public void DisableAllFields() {
-        int size = getLength();
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                int index = index(i, j);
-                GameField Field = (GameField) GamePanel.getComponent(index);
-                Field.setEnabled(false);
-            }
-        }
     }
 
     public void InitializeGameTeam(Team team1) {
@@ -599,24 +478,106 @@ public class MainWindow extends JFrame {
         }
     }
 
-    public void HighlightField(Point FieldPoint, HighlightMode Mode) {
-        GameField Field = (GameField) GamePanel.getComponent(index(FieldPoint.x, FieldPoint.y));
-        Field.HighlightField(Mode);
-    }
-
-    public void ShowWinMessage(Team Winner)
-    {
+    public void ShowWinMessage(Team Winner) {
         String message = "";
-        switch (Winner.getDirection())
-        {
+        switch (Winner.getDirection()) {
             case SW:
-                message="Unfortunately, Computer is the winner!";
+                message = "Unfortunately, Computer is the winner!";
                 break;
             case NE:
-                message="Congratulations! You are the winner!";
+                message = "Congratulations! You are the winner!";
                 break;
         }
-        JOptionPane.showMessageDialog(GameViewPanel,message);
+        JOptionPane.showMessageDialog(GameViewPanel, message);
+    }
+
+    public void ComputerTurnDisplay(List<Point> Moves) {
+        if (Moves.size() < 2)
+            return;
+        Point From = Moves.get(0);
+        FromField = (GameField) GamePanel.getComponent(index(From.x, From.y));
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    FromField.HighlightField(HighlightMode.HighlightPawn);
+                    try {
+                        Thread.sleep(Configuration.getTurnDisplayTime());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        for (int i = 1; i < Moves.size(); i++) {
+            Point To = Moves.get(i);
+            GameField ToField = (GameField) GamePanel.getComponent(index(To.x, To.y));
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        FromField.ClearField();
+                        ToField.setTeamPawn(GM.getTeamSecond().getDirection());
+                        ToField.HighlightField(HighlightMode.HighlightPawn);
+                        revalidate();
+                        try {
+                            Thread.sleep(Configuration.getTurnDisplayTime());
+                        } catch (Exception e) {
+                            System.out.printf(e.getMessage());
+                        }
+
+                    }
+                });
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            FromField = ToField;
+        }
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(Configuration.getTurnDisplayTime());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    FromField.HighlightField(HighlightMode.HighlightNone);
+                }
+            });
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void RestartGameView() {
+        try {
+            SwingUtilities.invokeAndWait(
+                    new Runnable() {
+                        public void run() {
+                            for (Component component : GamePanel.getComponents()) {
+                                GameField field = (GameField) component;
+                                field.ClearField();
+                            }
+                            ResetAllListeners();
+                            HighlightAllFields(HighlightMode.HighlightNone);
+                        }
+                    });
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
     }
 
 

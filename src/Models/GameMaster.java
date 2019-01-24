@@ -94,17 +94,31 @@ public class GameMaster {
         }
         if (CheckWinCondition(teamFirst)) {
             GameWindow.ShowWinMessage(teamFirst);
+            restartGame();
+
             return;
         }
         MakeAIMove();
         if (CheckWinCondition(teamSecond)) {
             GameWindow.ShowWinMessage(teamSecond);
+            restartGame();
             return;
         }
         nextUserTurn();
 
 
     }
+
+    private void restartGame()
+    {
+        GameWindow.RestartGameView();
+        board = new Board(Configuration.getGameSize());
+        teamFirst = new Team(TeamDirection.NE, Configuration.getGameSize());
+        teamSecond = new Team(TeamDirection.SW, Configuration.getGameSize());
+        prepareGame(board,teamFirst,teamSecond);
+    }
+
+
 
     private boolean CheckWinCondition(Team team) {
         return team.countDistance(board.getSize()) == team.getWinDistance();

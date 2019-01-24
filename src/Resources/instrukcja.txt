@@ -1,0 +1,18 @@
+﻿<html>
+<div align="center"><h2>Zasady Gry</h2></div>
+<ul>
+<li type="disc">Rozgrywka toczona jest na kwadratowej planszy o wymiarach 9 x 9 lub 8 x 8.
+<li>Każdy z zawodników posiada 8 pionków. 
+<li>Celem gry jest przestawienie swoich pionków na pola startowe przeciwnika.</li>
+<li>Zwycięzcą zostaje ten zawodnik, który przestawi swoje pionki jako pierwszy.</li>
+<li>Zasady poruszania pionkami :
+<ul>
+<li type="disc"> W jednej turze zawodnik może poruszyć tylko jednym pionkiem</li>
+<li type="disc"> Pionek można przestawić o jedno miejsce w dowolnym z czterech kierunków (góra, dół, lewo, prawo)<br> pod warunkiem, że na polu docelowym nie znajduje się inny pionek </li>
+<li type="disc"> Jest możliwy skok pionkiem zamiast ruchu określonego powyżej
+<ul>
+<li type="disc"> Jeśli pole sąsiadujące jest zajęte przez pionek własny lub przeciwnika, to może on zostać <br>przeskoczony tylko wtedy, kiedy w kierunku wykonywanego ruchu za danym pionkiem znajduje się wolne pole. </li>
+<li type="disc">Skoki są dozwolone we wszystkich kierunkach – można skakać zygzakiem. </li>
+<li type="disc">Pionki się nie zbijają. </li>
+<li type="disc">Skoki mogą zostać przerwane w dowolnym momencie. Nie ma przymusu skakania.</li></ul></li></ul></li></ul>
+

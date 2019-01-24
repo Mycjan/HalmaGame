@@ -107,6 +107,7 @@ public class GameField extends JButton {
         GameWindow.setCheckedField(this);
         this.setTeamPawn(GameWindow.getGM().getTeamFirst().getDirection());
 
+
         if (IsMoveShort(From, To)) {
             Thread thread= new Thread(new Runnable() {
                 @Override
