@@ -52,10 +52,6 @@ public class GameField extends JButton {
         return Position;
     }
 
-    public void setPosition(Point position) {
-        Position = position;
-    }
-
     public void setTeamPawn(TeamDirection team) {
         String CurrentWorkingDirectory = System.getProperty("user.dir") + "\\src\\Resources";
         Image img = null;
@@ -98,7 +94,6 @@ public class GameField extends JButton {
         GameWindow.setCheckedField(this);
         AddEndTurnListener();
         GameWindow.setItPossibleToEndTurn(true);
-
     }
 
     public void MoveTo() {
@@ -110,9 +105,7 @@ public class GameField extends JButton {
         Point To = this.Position;
         GameWindow.getCheckedField().ClearField();
         GameWindow.setCheckedField(this);
-
         this.setTeamPawn(GameWindow.getGM().getTeamFirst().getDirection());
-
 
         if (IsMoveShort(From, To)) {
             Thread thread= new Thread(new Runnable() {

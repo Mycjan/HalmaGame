@@ -23,6 +23,7 @@ public class MainWindow extends JFrame {
     private JRadioButton Size9RadioButton;
     private JLabel DifficultyLevelLabel;
     private JRadioButton EasyDifficultyRadioButton;
+    private JRadioButton MediumDifficultyRadioButton;
     private JRadioButton HardDifficultyRadioButton;
     private ButtonGroup SizeButtonGroup;
     private ButtonGroup DifficultyLevelButtonGroup;
@@ -32,8 +33,8 @@ public class MainWindow extends JFrame {
     private JPanel GameLabelVerticalPanel;
     private GameMaster GM;
 
-    private final static int PROPERTIES_FRAME_WIDTH = 300;
-    private final static int PROPERTIES_FRAME_HEIGHT = 150;
+    private final static int PROPERTIES_FRAME_WIDTH = 500;
+    private final static int PROPERTIES_FRAME_HEIGHT = 300;
     private final static int GAME_FRAME_WIDTH = 700;
     private final static int GAME_FRAME_HEIGHT = 700;
     public final static double PROPERTIES_LAYOUT_WEIGHT = 0.05;
@@ -42,19 +43,13 @@ public class MainWindow extends JFrame {
     private List<Point> HighlightedPossibleMoves = new ArrayList<>();
     private GameField CheckedField;
     private ConfigureInformation Configuration;
+    private Boolean IsItPossibleToEndTurn = false;
+    private GameField FromField;
 
-    public Boolean getItPossibleToEndTurn() {
-        return IsItPossibleToEndTurn;
-    }
 
     public void setItPossibleToEndTurn(Boolean itPossibleToEndTurn) {
         IsItPossibleToEndTurn = itPossibleToEndTurn;
     }
-
-    private Boolean IsItPossibleToEndTurn = false;
-
-    private GameField FromField;
-
 
     public void ComputerTurnDisplay(List<Point> Moves) {
         if (Moves.size() < 2)
@@ -124,20 +119,8 @@ public class MainWindow extends JFrame {
 
     }
 
-    public Boolean getPlayerTurnEnded() {
-        return IsItPossibleToEndTurn;
-    }
-
-    public void setPlayerTurnEnded(Boolean playerTurnEnded) {
-        IsItPossibleToEndTurn = playerTurnEnded;
-    }
-
     public List<Point> getHighlightedPossibleMoves() {
         return HighlightedPossibleMoves;
-    }
-
-    public void setHighlightedPossibleMoves(List<Point> highlightedPossibleMoves) {
-        HighlightedPossibleMoves = highlightedPossibleMoves;
     }
 
     public GameField getCheckedField() {
@@ -291,6 +274,7 @@ public class MainWindow extends JFrame {
 
         InitializeDifficultyLevelLabel(rootGBC);
         InitializeEasyDifficultyRadioButton(rootGBC);
+        InitializeMediumDifficultyRadioButton(rootGBC);
         InitializeHardDifficultyRadioButton(rootGBC);
 
         InitializeStartGameButton(rootGBC);
@@ -324,12 +308,19 @@ public class MainWindow extends JFrame {
 
         });
         rootGBC.gridx = 1;
-        rootGBC.gridy = 4;
+        rootGBC.gridy = 5;
         rootGBC.gridwidth = 2;
         rootGBC.weightx = PROPERTIES_LAYOUT_WEIGHT;
         rootGBC.weighty = PROPERTIES_LAYOUT_WEIGHT;
         rootGBC.fill = GridBagConstraints.BOTH;
         PropertiesPanel.add(StartGameButton, rootGBC);
+        StartGameButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(PropertiesPanel,"Win first team");
+
+            }
+        });
     }
 
     private void InitializeInstructionLabel(GridBagConstraints rootGBC) {
@@ -352,6 +343,7 @@ public class MainWindow extends JFrame {
 
         DifficultyLevelButtonGroup = new ButtonGroup();
         DifficultyLevelButtonGroup.add(EasyDifficultyRadioButton);
+        DifficultyLevelButtonGroup.add(MediumDifficultyRadioButton);
         DifficultyLevelButtonGroup.add(HardDifficultyRadioButton);
         DifficultyLevelButtonGroup.clearSelection();
         EasyDifficultyRadioButton.setSelected(true);
@@ -361,10 +353,20 @@ public class MainWindow extends JFrame {
         HardDifficultyRadioButton = new JRadioButton();
         HardDifficultyRadioButton.setText("Hard");
         rootGBC.gridx = 2;
-        rootGBC.gridy = 3;
+        rootGBC.gridy = 4;
         rootGBC.weightx = PROPERTIES_LAYOUT_WEIGHT;
         rootGBC.weighty = PROPERTIES_LAYOUT_WEIGHT;
         PropertiesPanel.add(HardDifficultyRadioButton, rootGBC);
+    }
+
+    private void InitializeMediumDifficultyRadioButton(GridBagConstraints rootGBC) {
+        MediumDifficultyRadioButton = new JRadioButton();
+        MediumDifficultyRadioButton.setText("Medium");
+        rootGBC.gridx = 2;
+        rootGBC.gridy = 3;
+        rootGBC.weightx = PROPERTIES_LAYOUT_WEIGHT;
+        rootGBC.weighty = PROPERTIES_LAYOUT_WEIGHT;
+        PropertiesPanel.add(MediumDifficultyRadioButton, rootGBC);
     }
 
     private void InitializeEasyDifficultyRadioButton(GridBagConstraints rootGBC) {
@@ -396,11 +398,6 @@ public class MainWindow extends JFrame {
         rootGBC.weightx = PROPERTIES_LAYOUT_WEIGHT;
         rootGBC.weighty = PROPERTIES_LAYOUT_WEIGHT;
         PropertiesPanel.add(Size9RadioButton, rootGBC);
-        Size9RadioButton.addActionListener(e -> {
-            int length = 9;
-            ResizeGame(length);
-
-        });
     }
 
     private void InitializeSizeLabel(GridBagConstraints rootGBC) {
@@ -422,14 +419,6 @@ public class MainWindow extends JFrame {
         rootGBC.weightx = PROPERTIES_LAYOUT_WEIGHT;
         rootGBC.weighty = PROPERTIES_LAYOUT_WEIGHT;
         PropertiesPanel.add(Size8RadioButton, rootGBC);
-        Size8RadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int length = 8;
-                ResizeGame(length);
-            }
-        });
-
     }
 
     private void ResizeGame(int length) {
@@ -613,6 +602,21 @@ public class MainWindow extends JFrame {
     public void HighlightField(Point FieldPoint, HighlightMode Mode) {
         GameField Field = (GameField) GamePanel.getComponent(index(FieldPoint.x, FieldPoint.y));
         Field.HighlightField(Mode);
+    }
+
+    public void ShowWinMessage(Team Winner)
+    {
+        String message = "";
+        switch (Winner.getDirection())
+        {
+            case SW:
+                message="Unfortunately, Computer is the winner!";
+                break;
+            case NE:
+                message="Congratulations! You are the winner!";
+                break;
+        }
+        JOptionPane.showMessageDialog(GameViewPanel,message);
     }
 
 
