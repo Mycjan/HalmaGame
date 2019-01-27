@@ -30,12 +30,15 @@ public class GameTree {
             @Override
             public void run() {
                 bool = true;
-                while (true) {
+                boolean foundWonPos = false;
+                while (!foundWonPos) {
                     levelInBulid = new ArrayList<>();
                     for (TreeNode t : lastBuildLevel) {
                         if (!bool)
                             return;
-                        findChildrens(t);
+                        if (findChildrens(t)) {
+                            foundWonPos = true;
+                        }
                     }
                     lastBuildLevel = levelInBulid;
                 }
@@ -85,7 +88,7 @@ public class GameTree {
 
     private void findBestMove(TreeNode t) {
         if (t.getChildres() == null) {
-            t.setCount(t.getMyTeam().countDistance(t.getBoard().getSize()) / t.getConcurrentTeam().countDistance(t.getBoard().getSize()));
+            t.setCount(t.getMyTeam().countDistance(t.getBoard().getSize()));
             return;
         }
 
@@ -95,13 +98,13 @@ public class GameTree {
             findBestMove(children);
             switch (t.getLevelNum() % 2) {
                 case 0:
-                    if (children.getCount() < t.getCount() || t.getBestChild() == null) {
+                    if (children.getCount() <= t.getCount() || t.getBestChild() == null) {
                         t.setCount(children.getCount());
                         t.setBestChild(i);
                     }
                     break;
                 case 1:
-                    if (children.getCount() > t.getCount() || t.getBestChild() == null) {
+                    if (children.getCount() >= t.getCount() || t.getBestChild() == null) {
                         t.setCount(children.getCount());
                         t.setBestChild(i);
                     }
@@ -111,18 +114,28 @@ public class GameTree {
 
     }
 
-    private void bildNextLevel(List<TreeNode> thisLevel) {
+    private boolean bildNextLevel(List<TreeNode> thisLevel) {
         levelInBulid = new ArrayList<>();
+        boolean foundWonPos = false;
         for (TreeNode t : thisLevel) {
-            findChildrens(t);
+            if (findChildrens(t)) {
+                foundWonPos = true;
+            }
         }
         lastBuildLevel = levelInBulid;
+        return foundWonPos;
     }
 
-    private void findChildrens(TreeNode node) {
+    private boolean findChildrens(TreeNode node) {
         List<TreeNode> nodes = MoveFinder.GetAllMovesOnLevel(node.getMyTeam(), node.getConcurrentTeam(), node.getBoard(), node.getLevelNum() + 1);
-
+        boolean foundWonPos = false;
+        for (TreeNode n : nodes) {
+            if (n.getMyTeam().countDistance(n.getBoard().getSize()) == n.getMyTeam().getWinDistance()) {
+                foundWonPos = true;
+            }
+        }
         node.setChildres(nodes);
         levelInBulid.addAll(nodes);
+        return foundWonPos;
     }
 }

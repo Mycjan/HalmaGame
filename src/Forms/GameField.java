@@ -1,5 +1,6 @@
 package Forms;
 
+import Models.GameMaster;
 import Models.TeamDirection;
 
 import javax.imageio.ImageIO;
@@ -7,10 +8,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class GameField extends JButton {
 
+    private Point Position;
     private int xPosition;
     private int yPosition;
     private MainWindow GameWindow;
@@ -20,8 +24,8 @@ public class GameField extends JButton {
         this.xPosition = xPosition;
         this.yPosition = yPosition;
         this.GameWindow = GameWindow;
-
         setBorder(BorderFactory.createLineBorder(Color.black, 1));
+        Position = new Point(xPosition, yPosition);
     }
 
     public void HighlightField(HighlightMode mode) {
@@ -40,7 +44,12 @@ public class GameField extends JButton {
 
     public void ClearField() {
         setBorder(BorderFactory.createLineBorder(Color.black, 1));
+        HighlightField(HighlightMode.HighlightNone);
         setIcon(null);
+    }
+
+    public Point getPosition() {
+        return Position;
     }
 
     public void setTeamPawn(TeamDirection team) {
@@ -71,21 +80,76 @@ public class GameField extends JButton {
         HighlightField(HighlightMode.HighlightPawn);
         List<Point> PossibleMoves = GameWindow.getGM().getBoard().PossibleMovesFromPoint(new Point(xPosition, yPosition), true);
         GameWindow.HighlightFields(PossibleMoves, HighlightMode.HighlightPossibleMove);
+        GameWindow.ResetListenersOnFields(GameWindow.getHighlightedPossibleMoves());
         GameWindow.AddPossibleMoveListeners(PossibleMoves);
         GameWindow.setCheckedField(this);
     }
 
-    public void MoveTo() {
+    public void CheckFieldTurnContinue() {
         GameWindow.HighlightAllFields(HighlightMode.HighlightNone);
-        GameWindow.ResetAllListeners();
         HighlightField(HighlightMode.HighlightPawn);
-        GameWindow.HighlightFields(GameWindow.getGM().getBoard().PossibleMovesFromPoint(new Point(xPosition, yPosition), false), HighlightMode.HighlightPossibleMove);
+        List<Point> PossibleMoves = GameWindow.getGM().getBoard().PossibleMovesFromPoint(new Point(xPosition, yPosition), false);
+        GameWindow.HighlightFields(PossibleMoves, HighlightMode.HighlightPossibleMove);
+        GameWindow.AddPossibleMoveListeners(PossibleMoves);
+        GameWindow.setCheckedField(this);
+        AddEndTurnListener();
+        GameWindow.setItPossibleToEndTurn(true);
+    }
+
+    public void MoveTo() {
+        GameWindow.getGM().getBoard().movePawnOnBoard(GameWindow.getCheckedField().getPosition(), this.Position);
+        GameWindow.getGM().getTeamFirst().movePawnInTeam(GameWindow.getCheckedField().getPosition(), this.Position);
+        GameWindow.HighlightAllFields(HighlightMode.HighlightNone);
+        GameWindow.getHighlightedPossibleMoves().remove(new Point(xPosition, yPosition));
+        Point From = GameWindow.getCheckedField().getPosition();
+        Point To = this.Position;
         GameWindow.getCheckedField().ClearField();
+        GameWindow.setCheckedField(this);
         this.setTeamPawn(GameWindow.getGM().getTeamFirst().getDirection());
+
+
+        if (IsMoveShort(From, To)) {
+            Thread thread= new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    GameWindow.getGM().processGame();
+                }
+            });
+            thread.start();
+        } else {
+            GameWindow.ResetAllListeners();
+            this.AddCheckFieldContinueListener();
+            this.doClick();
+        }
+    }
+
+    public void EndTurn() {
+        Thread thread= new Thread(new Runnable() {
+            @Override
+            public void run() {
+                GameWindow.getGM().processGame();
+            }
+        });
+        thread.start();
+    }
+
+    public Boolean IsMoveShort(Point from, Point to) {
+        if (Math.abs(from.x - to.x) == 1 || Math.abs(from.y - to.y) == 1)
+            return true;
+        return false;
     }
 
     public void AddCheckFieldListener() {
         addActionListener(e -> CheckFieldAtTurnStart());
+    }
+
+    public void AddCheckFieldContinueListener() {
+        addActionListener(e -> CheckFieldTurnContinue());
+    }
+
+    public void AddEndTurnListener()
+    {
+        addActionListener(e->EndTurn());
     }
 
     public void AddMoveListeners() {

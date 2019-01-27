@@ -66,7 +66,7 @@ public class Team {
         }
 
         for (Pawn p : endTeam) {
-            double dist = Math.sqrt(((x - p.getX()) * (x - p.getX())) + ((y - p.getY()) * (y - p.getY())));
+            double dist = ((x - p.getX()) * (x - p.getX())) + ((y - p.getY()) * (y - p.getY()));
             distSum += dist;
         }
 
