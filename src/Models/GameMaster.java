@@ -3,7 +3,6 @@ package Models;
 import Forms.GameField;
 import Forms.HighlightMode;
 import Forms.MainWindow;
-import com.sun.tools.javac.Main;
 
 import javax.swing.*;
 import javax.swing.text.Utilities;
