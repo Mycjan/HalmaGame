@@ -85,7 +85,7 @@ public class GameTree {
 
     private void findBestMove(TreeNode t) {
         if (t.getChildres() == null) {
-            t.setCount(t.getMyTeam().countDistance(t.getBoard().getSize()) / t.getConcurrentTeam().countDistance(t.getBoard().getSize()));
+            t.setCount(t.getMyTeam().countDistance(t.getBoard().getSize()));
             return;
         }
 

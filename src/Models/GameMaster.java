@@ -6,7 +6,9 @@ import Forms.MainWindow;
 import com.sun.tools.javac.Main;
 
 import javax.swing.*;
+import javax.swing.text.Utilities;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +33,7 @@ public class GameMaster {
 
     public void nextUserTurn() {
         GameWindow.EnableTeamFields(teamFirst);
+        GameWindow.setItPossibleToEndTurn(false);
     }
 
     public void endUserTurn() {
@@ -45,39 +48,6 @@ public class GameMaster {
         GameWindow.EnableTeamFields(teamFirst);
         board.placeTeam(teamFirst);
         board.placeTeam(teamSecond);
-
-        /*try {
-            Thread.sleep(2000);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        List<Point> FirstExampleComputerMove = new ArrayList<Point>();
-        FirstExampleComputerMove.add(new Point(5, 0));
-        FirstExampleComputerMove.add(new Point(5, 2));
-        FirstExampleComputerMove.add(new Point(5, 3));
-        FirstExampleComputerMove.add(new Point(5, 4));
-        List<Point> SecondExampleComputerMove = new ArrayList<Point>();
-        SecondExampleComputerMove.add(new Point(6, 2));
-        SecondExampleComputerMove.add(new Point(4, 2));*/
-
-        /*Thread first = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                GameWindow.ComputerTurnDisplay(FirstExampleComputerMove);
-                GameWindow.ComputerTurnDisplay(SecondExampleComputerMove);
-            }
-        });
-        first.start();*/
-
-
-
-
-
- /*
-
-
-           */
-
     }
 
     public List<Point> countAIMove() {
@@ -107,19 +77,48 @@ public class GameMaster {
         teamSecond.movePawnInTeam(oldPoint, newPoint);
         board.movePawnOnBoard(oldPoint, newPoint);
         GameWindow.ComputerTurnDisplay(AIMove);
-        //System.out.println(teamSecond.countDistance(boardSize));
     }
-
 
     public void processGame() {
-        endUserTurn();
-        if (CheckWinCondition(teamFirst))
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    endUserTurn();
+                }
+            });
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        if (CheckWinCondition(teamFirst)) {
+            GameWindow.ShowWinMessage(teamFirst);
+            restartGame();
+
             return;
+        }
         MakeAIMove();
-        if (CheckWinCondition(teamSecond))
+        if (CheckWinCondition(teamSecond)) {
+            GameWindow.ShowWinMessage(teamSecond);
+            restartGame();
             return;
+        }
         nextUserTurn();
+
+
     }
+
+    private void restartGame()
+    {
+        GameWindow.RestartGameView();
+        board = new Board(Configuration.getGameSize());
+        teamFirst = new Team(TeamDirection.NE, Configuration.getGameSize());
+        teamSecond = new Team(TeamDirection.SW, Configuration.getGameSize());
+        prepareGame(board,teamFirst,teamSecond);
+    }
+
+
 
     private boolean CheckWinCondition(Team team) {
         return team.countDistance(board.getSize()) == team.getWinDistance();
