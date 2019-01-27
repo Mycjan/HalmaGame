@@ -20,6 +20,7 @@ public class Main {
         tree.bildTree(10);*/
 
         MainWindow window = new MainWindow();
+
         window.setVisible(true);
 
 
