@@ -1,4 +1,5 @@
 package Models;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,12 +57,12 @@ public class MoveFinder {
 
         List<TreeNode> nodes = new ArrayList<>(MoveFinder.GetOneFieldsMove(pawn, currentBoard, myTeam, concurrentTeam, levelNum));
 
-        ArrayList<Point> pointToCheck = new ArrayList<Point>() {
+        ArrayList<Point> pointToCheck = new ArrayList<>() {
             {
                 add(new Point(pawn.getX(), pawn.getY()));
             }
         };
-        ArrayList<List<Point>> pointsToCheck = new ArrayList<List<Point>>() {
+        ArrayList<List<Point>> pointsToCheck = new ArrayList<>() {
             {
                 add(pointToCheck);
             }
@@ -72,7 +73,6 @@ public class MoveFinder {
             List<Point> pawnPosition = pointsToCheck.remove(0);
             nodes.addAll(MoveFinder.GetJumpMove(pawnPosition, currentBoard, pointsToCheck, checked, myTeam, concurrentTeam, levelNum));
         }
-
         return nodes;
     }
 

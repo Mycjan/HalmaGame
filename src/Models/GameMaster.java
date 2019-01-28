@@ -1,18 +1,16 @@
 package Models;
 
-import Forms.GameField;
 import Forms.HighlightMode;
 import Forms.MainWindow;
 
 import javax.swing.*;
-import javax.swing.text.Utilities;
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class GameMaster {
+
     private Board board;
     private Team teamFirst;
     private Team teamSecond;
@@ -29,7 +27,6 @@ public class GameMaster {
         GameWindow = Configuration.GameWindow;
     }
 
-
     public void nextUserTurn() {
         GameWindow.EnableTeamFields(teamFirst);
         GameWindow.setItPossibleToEndTurn(false);
@@ -39,7 +36,6 @@ public class GameMaster {
         GameWindow.ResetAllListeners();
         GameWindow.HighlightAllFields(HighlightMode.HighlightNone);
     }
-
 
     public void prepareGame(Board board, Team teamFirst, Team teamSecond) {
         GameWindow.InitializeGameTeam(teamFirst);
@@ -64,12 +60,11 @@ public class GameMaster {
                 time = 5;
                 break;
         }
-        tree.bildTree(time, TimeUnit.SECONDS); //time form game settings
+        tree.buildTree(time, TimeUnit.SECONDS); //time form game settings
         return tree.getBestMove();
     }
 
-
-    public void MakeAIMove() {
+    public void makeAIMove() {
         List<Point> AIMove = countAIMove();
         Point oldPoint = AIMove.get(0);
         Point newPoint = AIMove.get(AIMove.size() - 1);
@@ -80,86 +75,48 @@ public class GameMaster {
 
     public void processGame() {
         try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    endUserTurn();
-                }
-            });
+            SwingUtilities.invokeAndWait(() -> endUserTurn());
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
-        if (CheckWinCondition(teamFirst)) {
+        if (checkWinCondition(teamFirst)) {
             GameWindow.ShowWinMessage(teamFirst);
             restartGame();
 
             return;
         }
-        MakeAIMove();
-        if (CheckWinCondition(teamSecond)) {
+        makeAIMove();
+        if (checkWinCondition(teamSecond)) {
             GameWindow.ShowWinMessage(teamSecond);
             restartGame();
             return;
         }
         nextUserTurn();
-
-
     }
 
-    private void restartGame()
-    {
+    private void restartGame() {
         GameWindow.RestartGameView();
         board = new Board(Configuration.getGameSize());
         teamFirst = new Team(TeamDirection.NE, Configuration.getGameSize());
         teamSecond = new Team(TeamDirection.SW, Configuration.getGameSize());
-        prepareGame(board,teamFirst,teamSecond);
+        prepareGame(board, teamFirst, teamSecond);
     }
 
-
-
-    private boolean CheckWinCondition(Team team) {
+    private boolean checkWinCondition(Team team) {
         return team.countDistance(board.getSize()) == team.getWinDistance();
     }
 
-
     public Board getBoard() {
         return board;
-    }
-
-    public void setBoard(Board board) {
-        this.board = board;
     }
 
     public Team getTeamFirst() {
         return teamFirst;
     }
 
-    public void setTeamFirst(Team teamFirst) {
-        this.teamFirst = teamFirst;
-    }
-
     public Team getTeamSecond() {
         return teamSecond;
     }
-
-    public void setTeamSecond(Team teamSecond) {
-        this.teamSecond = teamSecond;
-    }
-
-    private int index(int x, int y) {
-        if (x < 0)
-            return -1;
-        if (y < 0)
-            return -1;
-        if (x > board.getSize())
-            return -1;
-        if (y > board.getSize())
-            return -1;
-
-        return x * board.getSize() + y;
-    }
-
-
 }

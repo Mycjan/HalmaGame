@@ -1,12 +1,12 @@
 package Models;
 
 import java.awt.*;
-import java.nio.file.attribute.PosixFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class Board {
+
     private boolean[][] tiles;
     private int size;
 
@@ -41,7 +41,6 @@ public class Board {
     public Board clone() {
         Board newBoard = new Board(size);
         newBoard.setTiles(this.tilesDeepCopy());
-
         return newBoard;
     }
 

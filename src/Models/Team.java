@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Team {
+    
     private List<Pawn> pawns;
     private TeamDirection direction;
     private double winDistance;
@@ -73,7 +74,6 @@ public class Team {
         return distSum;
     }
 
-
     public double countDistance(int boardSize) {
         return teamDistance(boardSize, pawns, direction);
     }
@@ -95,9 +95,5 @@ public class Team {
         nTeam.direction = direction;
         nTeam.winDistance = winDistance;
         return nTeam;
-    }
-
-    public void setPawns(List<Pawn> pawns) {
-        this.pawns = pawns;
     }
 }

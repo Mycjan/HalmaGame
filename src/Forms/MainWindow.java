@@ -9,14 +9,11 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.HierarchyListener;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
-
 
 public class MainWindow extends JFrame {
 
@@ -52,27 +49,6 @@ public class MainWindow extends JFrame {
     private Boolean IsItPossibleToEndTurn = false;
     private GameField FromField;
 
-
-    public void setItPossibleToEndTurn(Boolean itPossibleToEndTurn) {
-        IsItPossibleToEndTurn = itPossibleToEndTurn;
-    }
-
-    public List<Point> getHighlightedPossibleMoves() {
-        return HighlightedPossibleMoves;
-    }
-
-    public GameField getCheckedField() {
-        return CheckedField;
-    }
-
-    public void setCheckedField(GameField checkedField) {
-        CheckedField = checkedField;
-    }
-
-    private void createUIComponents() {
-
-    }
-
     public MainWindow() {
 
         //Main window properties
@@ -95,6 +71,70 @@ public class MainWindow extends JFrame {
         add(RootPanel);
         setVisible(true);
     }
+
+
+    public List<Point> getHighlightedPossibleMoves() {
+        return HighlightedPossibleMoves;
+    }
+
+    public GameField getCheckedField() {
+        return CheckedField;
+    }
+
+    public void setItPossibleToEndTurn(Boolean itPossibleToEndTurn) {
+        IsItPossibleToEndTurn = itPossibleToEndTurn;
+    }
+
+    public void setCheckedField(GameField checkedField) {
+        CheckedField = checkedField;
+    }
+
+    private int getLength() {
+        int length = 0;
+        if (Size8RadioButton.isSelected()) {
+            length = 8;
+        } else if (Size9RadioButton.isSelected()) {
+            length = 9;
+        }
+        return length;
+    }
+
+    private DifficultyLevel getDifficultyLevel() {
+        DifficultyLevel level = DifficultyLevel.Easy;
+        if (EasyDifficultyRadioButton.isSelected()) {
+            level = DifficultyLevel.Easy;
+        } else if (HardDifficultyRadioButton.isSelected()) {
+            level = DifficultyLevel.Hard;
+        }
+        return level;
+    }
+
+    private void createUIComponents() {
+    }
+
+    private int index(int x, int y) {
+        if (x < 0)
+            return -1;
+        if (y < 0)
+            return -1;
+        if (x > getLength())
+            return -1;
+        if (y > getLength())
+            return -1;
+
+        return y * getLength() + x;
+    }
+
+    public GameMaster getGM() {
+        return GM;
+    }
+
+    public JPanel getGamePanel() {
+        return GamePanel;
+    }
+
+
+    //Initialize methods
 
     private void InitializeGameViewPanel(GridBagConstraints rootGBC, int length) {
         setResizable(true);
@@ -131,7 +171,7 @@ public class MainWindow extends JFrame {
         for (int i = 0; i < length; i++) {
             JLabel TempLabel = new JLabel();
             TempLabel.setText("" + i);
-            setLabelProperties(TempLabel);
+            SetLabelProperties(TempLabel);
             GameLabelHorizontalPanel.add(TempLabel);
         }
         GameViewPanel.add(GameLabelHorizontalPanel, gameViewGBC);
@@ -149,7 +189,7 @@ public class MainWindow extends JFrame {
             JLabel TempLabel = new JLabel();
             TempLabel.setText("" + firstLetter);
             firstLetter++;
-            setLabelProperties(TempLabel);
+            SetLabelProperties(TempLabel);
             GameLabelVerticalPanel.add(TempLabel);
         }
         GameViewPanel.add(GameLabelVerticalPanel, gameViewGBC);
@@ -373,7 +413,7 @@ public class MainWindow extends JFrame {
         PropertiesPanel.add(Size8RadioButton, rootGBC);
     }
 
-    private void setLabelProperties(JLabel tempLabel) {
+    private void SetLabelProperties(JLabel tempLabel) {
         tempLabel.setHorizontalAlignment(SwingConstants.CENTER);
         tempLabel.setVerticalAlignment(SwingConstants.CENTER);
         tempLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -382,44 +422,8 @@ public class MainWindow extends JFrame {
         tempLabel.setPreferredSize(new Dimension(LabelSize, LabelSize));
     }
 
-    private int getLength() {
-        int length = 0;
-        if (Size8RadioButton.isSelected()) {
-            length = 8;
-        } else if (Size9RadioButton.isSelected()) {
-            length = 9;
-        }
-        return length;
-    }
-
-    private DifficultyLevel getDifficultyLevel() {
-        DifficultyLevel level = DifficultyLevel.Easy;
-        if (EasyDifficultyRadioButton.isSelected()) {
-            level = DifficultyLevel.Easy;
-        } else if (HardDifficultyRadioButton.isSelected()) {
-            level = DifficultyLevel.Hard;
-        }
-        return level;
-    }
-
-    private int index(int x, int y) {
-        if (x < 0)
-            return -1;
-        if (y < 0)
-            return -1;
-        if (x > getLength())
-            return -1;
-        if (y > getLength())
-            return -1;
-
-        return y * getLength() + x;
-    }
 
     //SECTION API
-
-    public JPanel getGamePanel() {
-        return GamePanel;
-    }
 
     public void InitializeGameTeam(Team team1) {
 
@@ -431,14 +435,10 @@ public class MainWindow extends JFrame {
 
     }
 
-    public GameMaster getGM() {
-        return GM;
-    }
-
     public void EnableTeamFields(Team team) {
         for (Pawn Pawn : team.getPawns()) {
             GameField Field = (GameField) GamePanel.getComponent(index(Pawn.getX(), Pawn.getY()));
-            Field.AddCheckFieldListener();
+            Field.addCheckFieldListener();
         }
     }
 
@@ -446,35 +446,35 @@ public class MainWindow extends JFrame {
         HighlightedPossibleMoves = PossibleMoves;
         for (Point point : PossibleMoves) {
             GameField Field = (GameField) GamePanel.getComponent(index(point.x, point.y));
-            Field.AddMoveListeners();
+            Field.addMoveListeners();
         }
     }
 
     public void HighlightAllFields(HighlightMode Mode) {
         for (Component Component : GamePanel.getComponents()) {
             GameField Field = (GameField) Component;
-            Field.HighlightField(Mode);
+            Field.highlightField(Mode);
         }
     }
 
     public void HighlightFields(List<Point> Fields, HighlightMode Mode) {
         for (Point point : Fields) {
             GameField Field = (GameField) GamePanel.getComponent(index(point.x, point.y));
-            Field.HighlightField(Mode);
+            Field.highlightField(Mode);
         }
     }
 
     public void ResetAllListeners() {
         for (Component Component : GamePanel.getComponents()) {
             GameField Field = (GameField) Component;
-            Field.ResetListeners();
+            Field.resetListeners();
         }
     }
 
     public void ResetListenersOnFields(List<Point> Fields) {
         for (Point fieldPoint : Fields) {
             GameField Field = (GameField) GamePanel.getComponent(index(fieldPoint.x, fieldPoint.y));
-            Field.ResetListeners();
+            Field.resetListeners();
         }
     }
 
@@ -500,7 +500,7 @@ public class MainWindow extends JFrame {
             SwingUtilities.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
-                    FromField.HighlightField(HighlightMode.HighlightPawn);
+                    FromField.highlightField(HighlightMode.HighlightPawn);
                     try {
                         Thread.sleep(Configuration.getTurnDisplayTime());
                     } catch (InterruptedException e) {
@@ -520,9 +520,9 @@ public class MainWindow extends JFrame {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     @Override
                     public void run() {
-                        FromField.ClearField();
+                        FromField.clearField();
                         ToField.setTeamPawn(GM.getTeamSecond().getDirection());
-                        ToField.HighlightField(HighlightMode.HighlightPawn);
+                        ToField.highlightField(HighlightMode.HighlightPawn);
                         revalidate();
                         try {
                             Thread.sleep(Configuration.getTurnDisplayTime());
@@ -548,7 +548,7 @@ public class MainWindow extends JFrame {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    FromField.HighlightField(HighlightMode.HighlightNone);
+                    FromField.highlightField(HighlightMode.HighlightNone);
                 }
             });
         } catch (InterruptedException e) {
@@ -566,7 +566,7 @@ public class MainWindow extends JFrame {
                         public void run() {
                             for (Component component : GamePanel.getComponents()) {
                                 GameField field = (GameField) component;
-                                field.ClearField();
+                                field.clearField();
                             }
                             ResetAllListeners();
                             HighlightAllFields(HighlightMode.HighlightNone);
@@ -579,6 +579,4 @@ public class MainWindow extends JFrame {
         }
 
     }
-
-
 }

@@ -9,7 +9,7 @@ public class TreeNode {
     private Board newBoard;
     private Team myTeam;
     private Team concurrentTeam;
-    private List<TreeNode> childrens;
+    private List<TreeNode> children;
     private int levelNum;
     private double count;
     private Integer bestChild;
@@ -17,7 +17,7 @@ public class TreeNode {
     public TreeNode(List<Point> moves, Board newBoard, Team myTeam, Team concurrentTeam, int levelNum) {
         this.moves = moves;
         this.newBoard = newBoard;
-        this.childrens = null;
+        this.children = null;
         this.myTeam = myTeam;
         this.concurrentTeam = concurrentTeam;
         this.levelNum = levelNum;
@@ -32,7 +32,7 @@ public class TreeNode {
         this.concurrentTeam.movePawnInTeam(oldPoint, newPoint);
         this.newBoard = oldBoard.clone();
         this.newBoard.movePawnOnBoard(oldPoint, newPoint);
-        this.childrens = null;
+        this.children = null;
         this.levelNum = levelNum;
         this.count = Double.MIN_VALUE;
         this.bestChild = null;
@@ -46,7 +46,7 @@ public class TreeNode {
         this.concurrentTeam.movePawnInTeam(oldPoint, newPoint);
         this.newBoard = oldBoard.clone();
         this.newBoard.movePawnOnBoard(oldPoint, newPoint);
-        this.childrens = null;
+        this.children = null;
         this.levelNum = levelNum;
         this.count = Double.MIN_VALUE;
         this.bestChild = null;
@@ -60,12 +60,12 @@ public class TreeNode {
         return newBoard;
     }
 
-    public List<TreeNode> getChildres() {
-        return childrens;
+    public List<TreeNode> getChildren() {
+        return children;
     }
 
-    public void setChildres(List<TreeNode> childrens) {
-        this.childrens = childrens;
+    public void setChildren(List<TreeNode> children) {
+        this.children = children;
     }
 
     public Team getMyTeam() {
